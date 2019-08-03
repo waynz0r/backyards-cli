@@ -1,0 +1,30 @@
+approved = [
+    "mit",
+    "apache-2.0",
+    "bsd-3-clause",
+    "bsd-2-clause",
+    "mpl-2.0",
+]
+
+ignored = [
+    "github.com/ghodss/yaml",
+    "github.com/davecgh/go-spew", # ISC license
+    "github.com/gogo/protobuf", # BSD
+    "gomodules.xyz/jsonpatch/v2",
+    "gopkg.in/fsnotify.v1",
+
+    # Vanity URLS :\
+    "istio.io/operator",
+    "istio.io/pkg",
+    "go.uber.org/atomic",
+    "go.uber.org/multierr",
+    "go.uber.org/zap",
+    "emperror.dev/handler/logrus",
+    "emperror.dev/errors",
+    "google.golang.org/grpc",
+    "google.golang.org/genproto",
+    "cloud.google.com/go",
+    "google.golang.org/api",
+    "sigs.k8s.io/yaml",
+    "go.opencensus.io",
+]

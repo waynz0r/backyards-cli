@@ -1,0 +1,56 @@
+builds:
+    -
+        main: ./cmd/backyards
+        binary: backyards
+        env:
+            - CGO_ENABLED=0
+        ldflags: "-s -w -X main.version={{ .Version }} -X main.commitHash={{ .ShortCommit }} -X main.buildDate={{ .Date }}"
+        goos:
+            - linux
+            - darwin
+            - windows
+        goarch:
+            - amd64
+
+archives:
+    -
+        name_template: "backyards_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+        format_overrides:
+            -
+                goos: windows
+                format: zip
+
+checksum:
+    name_template: "backyards_checksums.txt"
+
+changelog:
+    skip: true
+
+brews:
+    -
+        github:
+            owner: banzaicloud
+            name: homebrew-tap
+        folder: Formula
+        homepage: https://banzaicloud.com/
+        description: Command-line interface for Backyards
+        test: |
+            system "#{bin}/backyards --version"
+
+nfpms:
+    -
+        vendor: Banzai Cloud
+        maintainer: Banzai Cloud <info@banzaicloud.com>
+        homepage: https://banzaicloud.com/
+        description: Command-line interface for Backyards
+        formats:
+            - deb
+            - rpm
+        bindir: /usr/bin
+        license: Apache 2.0
+
+blob:
+    -
+        provider: s3
+        bucket: banzaicloud.com
+        folder: "downloads/backyards-cli/{{ .Version }}"
