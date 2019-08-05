@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.4.0
-	istio.io/operator v0.0.0-00010101000000-000000000000
+	istio.io/operator v0.0.0-20190805193245-ce3cfb6e2672
 	k8s.io/api v0.0.0-20190620084959-7cf5895f2711
 	k8s.io/apiextensions-apiserver v0.0.0-20190426053235-842c4571cde0
 	k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
@@ -23,7 +23,6 @@ require (
 )
 
 replace (
-	istio.io/operator => github.com/istio/operator v0.0.0-20190731053902-4c82f3cba141
 	k8s.io/api => k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
 	k8s.io/client-go => k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
