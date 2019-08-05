@@ -2,28 +2,6 @@ This is a command line interface under heavy development for [Backyards](https:/
 
 ### Installation
 
-Use the following command to quickly install the CLI:
-
-```bash
-❯ curl https://getbackyards.sh/cli | sh
-```
-
-The [script](scripts/getcli.sh) automatically chooses the best distribution package for your platform.
-
-Available packages:
-
-- [Debian package](https://banzaicloud.com/downloads/backyards-cli/latest?format=deb)
-- [RPM package](https://banzaicloud.com/downloads/backyards-cli/latest?format=rpm)
-- binary tarballs for [Linux](https://banzaicloud.com/downloads/backyards-cli/latest?os=linux) and [macOS](https://banzaicloud.com/downloads/backyards-cli/latest?os=darwin).
-
-You can also select the installation method (one of `auto`, `deb`, `rpm`, `brew`, `tar` or `go`) explicitly:
-
-```bash
-❯ curl https://getbackyards.sh/cli | sh -s -- deb
-```
-
-Alternatively, fetch the source and compile it using `go get`:
-
 ```bash
 ❯ go get github.com/banzaicloud/backyards-cli/cmd/backyards
 ```
