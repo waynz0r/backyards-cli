@@ -22,7 +22,7 @@ import (
 func NewRootCmd(cli cli.CLI) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "demoapp",
-		Short: "install and manage demo application",
+		Short: "Install and manage demo application",
 	}
 
 	cmd.AddCommand(
