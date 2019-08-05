@@ -1,10 +1,10 @@
 ## backyards demoapp
 
-install and manage demo application
+Install and manage demo application
 
 ### Synopsis
 
-install and manage demo application
+Install and manage demo application
 
 ### Options
 
@@ -23,7 +23,7 @@ install and manage demo application
 
 ### SEE ALSO
 
-* [backyards](backyards.md)	 - install and manage Backyards
+* [backyards](backyards.md)	 - Install and manage Backyards
 * [backyards demoapp install](backyards_demoapp_install.md)	 - Install demo application
 * [backyards demoapp uninstall](backyards_demoapp_uninstall.md)	 - Output or delete Kubernetes resources to uninstall Canary feature
 

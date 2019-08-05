@@ -30,7 +30,7 @@ var (
 func NewRootCmd(cli cli.CLI) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "istio",
-		Short: "install and manage Istio",
+		Short: "Install and manage Istio",
 	}
 
 	cmd.AddCommand(
