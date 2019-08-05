@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/banzaicloud/backyards-cli/cmd/backyards/static"
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/canary_operator"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
@@ -72,13 +72,14 @@ func newInstallCommand(cli cli.CLI) *cobra.Command {
 		Short: "Install Canary feature",
 		Long: `Installs Canary feature.
 
-The command provides the resources that can be applied manually or
-it can apply the resources automatically with --apply-resources option.`,
+The command automatically applies the resources.
+It can only dump the applicable resources with the '--dump-resources' option.
+`,
 		Example: `  # Default install.
-  backyards canary install | kubectl apply -f -
+  backyards canary install
 
   # Install Backyards into a non-default namespace.
-  backyards canary install -n backyards-system | kubectl apply -f -`,
+  backyards canary install -n backyards-system`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
@@ -133,7 +134,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 func getCanaryOperatorObjects(releaseName, canaryOperatorNamespace, prometheusURL string) (object.K8sObjects, error) {
 	var values Values
 
-	valuesYAML, err := helm.GetDefaultValues(static.CanaryOperatorChart)
+	valuesYAML, err := helm.GetDefaultValues(canary_operator.Chart)
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not get helm default values")
 	}
@@ -150,7 +151,7 @@ func getCanaryOperatorObjects(releaseName, canaryOperatorNamespace, prometheusUR
 		return nil, errors.WrapIf(err, "could not marshal yaml values")
 	}
 
-	objects, err := helm.Render(static.CanaryOperatorChart, string(rawValues), helm.ReleaseOptions{
+	objects, err := helm.Render(canary_operator.Chart, string(rawValues), helm.ReleaseOptions{
 		Name:      "canary-operator",
 		IsInstall: true,
 		IsUpgrade: false,

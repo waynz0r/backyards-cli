@@ -49,13 +49,13 @@ func newUninstallCommand(cli cli.CLI) *cobra.Command {
 		Short: "Output or delete Kubernetes resources to uninstall Istio",
 		Long: `Output or delete Kubernetes resources to uninstall Istio.
 
-The command provides the resources that can be deleted manually or
-it can delete the resources automatically with --delete-resources option.`,
+The command automatically removes the resources.
+It can only dump the removable resources with the '--dump-resources' option.`,
 		Example: `  # Default uninstall.
-  backyards istio uninstall | kubectl delete -f -
+  backyards istio uninstall
 
   # Uninstall Istio from a non-default namespace.
-  backyards istio uninstall install -n custom-istio-ns | kubectl delete -f -`,
+  backyards istio uninstall install -n custom-istio-ns`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true

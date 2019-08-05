@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/banzaicloud/backyards-cli/cmd/backyards/static"
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/meshdemo"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
@@ -70,13 +70,13 @@ func newInstallCommand(cli cli.CLI) *cobra.Command {
 		Short: "Install demo application",
 		Long: `Installs demo application.
 
-The command provides the resources that can be applied manually or
-it can apply the resources automatically with --apply-resources option.`,
+The command automatically applies the resources.
+It can only dump the applicable resources with the '--dump-resources' option.`,
 		Example: `  # Default install.
-  backyards demoapp install | kubectl apply -f -
+  backyards demoapp install
 
   # Install Backyards into a non-default namespace.
-  backyards demoapp install -n backyards-system | kubectl apply -f -`,
+  backyards demoapp install -n backyards-system`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
@@ -129,7 +129,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 func getMeshdemoObjects(namespace string) (object.K8sObjects, error) {
 	var values Values
 
-	valuesYAML, err := helm.GetDefaultValues(static.MeshdemoChart)
+	valuesYAML, err := helm.GetDefaultValues(meshdemo.Chart)
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not get helm default values")
 	}
@@ -146,7 +146,7 @@ func getMeshdemoObjects(namespace string) (object.K8sObjects, error) {
 		return nil, errors.WrapIf(err, "could not marshal yaml values")
 	}
 
-	objects, err := helm.Render(static.MeshdemoChart, string(rawValues), helm.ReleaseOptions{
+	objects, err := helm.Render(meshdemo.Chart, string(rawValues), helm.ReleaseOptions{
 		Name:      "meshdemo",
 		IsInstall: true,
 		IsUpgrade: false,

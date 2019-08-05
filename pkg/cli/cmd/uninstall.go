@@ -43,13 +43,13 @@ func newUninstallCommand(cli cli.CLI) *cobra.Command {
 		Short: "Uninstalls Backyards",
 		Long: `Uninstall Backyards
 
-The command provides the resources that can be deleted manually or
-it can delete the resources automatically with --delete-resources option.`,
+The command automatically removes the resources.
+It can only dump the removable resources with the '--dump-resources' option.`,
 		Example: `  # Default uninstall
-  backyards uninstall | kubectl delete -f -
+  backyards uninstall
 
   # Uninstall Backyards from a non-default namespace
-  backyards uninstall -n backyards-system | kubectl delete -f -`,
+  backyards uninstall -n backyards-system`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true

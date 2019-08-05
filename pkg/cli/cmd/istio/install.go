@@ -31,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/yaml"
 
-	"github.com/banzaicloud/backyards-cli/cmd/backyards/static"
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/istio_operator"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
@@ -72,18 +72,16 @@ func newInstallCommand(cli cli.CLI) *cobra.Command {
 		Short: "Installs Istio utilizing Banzai Cloud's Istio-operator",
 		Long: `Installs Istio utilizing Banzai Cloud's Istio-operator.
 
-The command provides the resources that can be applied manually or
-it can apply the resources automatically with --apply-resources option.
+The command automatically applies the resources.
+It can only dump the applicable resources with the '--dump-resources' option.
 
 The manual mode is a two phase process as the operator needs custom CRDs to work.
 The installer automatically detects whether the CRDs are installed or not, and behaves accordingly.`,
 		Example: `  # Default install.
-  backyards istio install | kubectl apply -f - # Installs CRDs at the first run
-  backyards istio install | kubectl apply -f - # Installs the rest of the resources on the second run
+  backyards istio install
 
   # Install Istio into a non-default namespace.
-  backyards istio install -n istio-custom-ns | kubectl apply -f - # Installs CRDs at the first run
-  backyards istio install -n istio-custom-ns | kubectl apply -f - # Installs the rest of the resources on the second run`,
+  backyards istio install -n istio-custom-ns`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
@@ -186,7 +184,7 @@ func (c *installCommand) applyResources(crds, objects object.K8sObjects) error {
 func getIstioOperatorObjects(releaseName string) (object.K8sObjects, error) {
 	var values Values
 
-	valuesYAML, err := helm.GetDefaultValues(static.IstioOperatorChart)
+	valuesYAML, err := helm.GetDefaultValues(istio_operator.Chart)
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not get helm default values")
 	}
@@ -203,7 +201,7 @@ func getIstioOperatorObjects(releaseName string) (object.K8sObjects, error) {
 		return nil, errors.WrapIf(err, "could not marshal yaml values")
 	}
 
-	objects, err := helm.Render(static.IstioOperatorChart, string(rawValues), helm.ReleaseOptions{
+	objects, err := helm.Render(istio_operator.Chart, string(rawValues), helm.ReleaseOptions{
 		Name:      "istio-operator",
 		IsInstall: true,
 		IsUpgrade: false,

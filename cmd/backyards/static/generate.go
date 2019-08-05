@@ -23,41 +23,37 @@ import (
 )
 
 func main() {
-	err := vfsgen.Generate(static.BackyardsChart, vfsgen.Options{
-		Filename:     "static/generated_backyards_chart.gogen.go",
-		PackageName:  "static",
-		BuildTags:    "prod",
-		VariableName: "BackyardsChart",
+	err := vfsgen.Generate(static.BackyardsChartSource, vfsgen.Options{
+		Filename:     "static/backyards/chart.gogen.go",
+		PackageName:  "backyards",
+		VariableName: "Chart",
 	})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = vfsgen.Generate(static.IstioOperatorChart, vfsgen.Options{
-		Filename:     "static/generated_istio_operator_chart.gogen.go",
-		PackageName:  "static",
-		BuildTags:    "prod",
-		VariableName: "IstioOperatorChart",
+	err = vfsgen.Generate(static.IstioOperatorChartSource, vfsgen.Options{
+		Filename:     "static/istio_operator/chart.gogen.go",
+		PackageName:  "istio_operator",
+		VariableName: "Chart",
 	})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = vfsgen.Generate(static.CanaryOperatorChart, vfsgen.Options{
-		Filename:     "static/generated_canary_operator_chart.gogen.go",
-		PackageName:  "static",
-		BuildTags:    "prod",
-		VariableName: "CanaryOperatorChart",
+	err = vfsgen.Generate(static.CanaryOperatorChartSource, vfsgen.Options{
+		Filename:     "static/canary_operator/chart.gogen.go",
+		PackageName:  "canary_operator",
+		VariableName: "Chart",
 	})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = vfsgen.Generate(static.MeshdemoChart, vfsgen.Options{
-		Filename:     "static/generated_meshdemo_chart.gogen.go",
-		PackageName:  "static",
-		BuildTags:    "prod",
-		VariableName: "MeshdemoChart",
+	err = vfsgen.Generate(static.MeshdemoChartSource, vfsgen.Options{
+		Filename:     "static/meshdemo/chart.gogen.go",
+		PackageName:  "meshdemo",
+		VariableName: "Chart",
 	})
 	if err != nil {
 		log.Fatalln(err)
