@@ -47,7 +47,7 @@ var (
 // RootCmd represents the root Cobra command
 var RootCmd = &cobra.Command{
 	Use:           "backyards",
-	Short:         "install and manage Backyards",
+	Short:         "Install and manage Backyards",
 	SilenceErrors: true,
 	SilenceUsage:  false,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {

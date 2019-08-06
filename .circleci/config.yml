@@ -139,21 +139,6 @@ jobs:
                     name: Release
                     command: make release
 
-    cdn-invalidate:
-        executor: aws/default
-        steps:
-            -
-                aws/install
-            -
-                aws/configure
-            -
-                run:
-                    name: Invalidate cloudfront edge cache
-                    command: |
-                     aws cloudfront create-invalidation \
-                       --distribution-id ${CDN_DISTRIBUTION_ID} \
-                       --paths "/downloads/backyards-cli/*"
-
 workflows:
     version: 2
     ci:
@@ -167,15 +152,6 @@ workflows:
                 release:
                     requires:
                         - build
-                    filters:
-                        tags:
-                            only: /^v?\d+\.\d+\.\d+(-\S*)?$/
-                        branches:
-                            ignore: /.*/
-            -
-                cdn-invalidate:
-                    requires:
-                        - release
                     filters:
                         tags:
                             only: /^v?\d+\.\d+\.\d+(-\S*)?$/
