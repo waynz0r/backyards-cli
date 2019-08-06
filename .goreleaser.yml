@@ -26,17 +26,6 @@ checksum:
 changelog:
     skip: true
 
-brews:
-    -
-        github:
-            owner: banzaicloud
-            name: homebrew-tap
-        folder: Formula
-        homepage: https://banzaicloud.com/
-        description: Command-line interface for Backyards
-        test: |
-            system "#{bin}/backyards --version"
-
 nfpms:
     -
         vendor: Banzai Cloud
@@ -48,9 +37,3 @@ nfpms:
             - rpm
         bindir: /usr/bin
         license: Apache 2.0
-
-blob:
-    -
-        provider: s3
-        bucket: banzaicloud.com
-        folder: "downloads/backyards-cli/{{ .Version }}"
