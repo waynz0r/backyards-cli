@@ -66,7 +66,7 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 		},
 	}
 
-	cmd.Flags().StringVar(&options.releaseName, "release-name", "istio-operator", "Name of the release")
+	cmd.Flags().StringVar(&options.releaseName, "release-name", "canary-operator", "Name of the release")
 	cmd.Flags().StringVar(&options.canaryOperatorNamespace, "canary-namespace", "backyards-canary", "Namespace for the canary operator")
 	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", false, "Dump resources to stdout instead of applying them")
 
