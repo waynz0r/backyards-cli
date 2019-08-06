@@ -62,7 +62,7 @@ endif
 
 .PHONY: build-release
 build-release: LDFLAGS += -w
-build-release: pre-build build ## Build a binary without debug information
+build-release: build ## Build a binary without debug information
 
 .PHONY: generate-docs
 generate-docs: ## Generate documentation for Backyards CLI
