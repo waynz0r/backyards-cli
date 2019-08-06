@@ -37,7 +37,7 @@ const (
 
 An existing Istio installation is required. You can install it with:
 
-backyards istio install | kubectl apply -f -
+backyards istio install
 `
 )
 

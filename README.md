@@ -21,7 +21,7 @@ Available Commands:
   help        Help about any command
   install     Install Backyards
   istio       Install and manage Istio
-  uninstall   Uninstalls Backyards
+  uninstall   Uninstall Backyards
   version     Print the client and api version information
 
 Flags:

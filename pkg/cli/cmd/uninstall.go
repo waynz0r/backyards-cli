@@ -40,7 +40,7 @@ func newUninstallCommand(cli cli.CLI) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "uninstall [flags]",
 		Args:  cobra.NoArgs,
-		Short: "Uninstalls Backyards",
+		Short: "Uninstall Backyards",
 		Long: `Uninstall Backyards
 
 The command automatically removes the resources.
