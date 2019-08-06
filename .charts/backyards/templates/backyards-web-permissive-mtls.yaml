@@ -1,0 +1,23 @@
+{{- if .Values.web.enabled }}
+# Make it possible to reach Backyards without mTLS (eg. using kube-proxy)
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: {{ include "backyards.fullname" . }}-web
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  targets:
+  - name: {{ include "backyards.fullname" . }}-web
+  peers:
+  - mtls:
+      mode: PERMISSIVE
+{{- end }}

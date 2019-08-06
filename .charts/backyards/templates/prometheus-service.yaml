@@ -1,0 +1,25 @@
+{{- if .Values.prometheus.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "prometheus.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "prometheus.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: prometheus
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  type: {{ .Values.prometheus.service.type }}
+  selector:
+    app.kubernetes.io/name: {{ include "prometheus.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+  - name: http-admin
+    port: {{ .Values.prometheus.service.port }}
+    targetPort: http
+{{- end }}

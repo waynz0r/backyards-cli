@@ -1,0 +1,12 @@
+apiVersion: v1
+appVersion: 0.1.0
+description: Backyards manages hybrid clusters connected with Istio
+home: https://banzaicloud.com
+icon: https://banzaicloud.com/img/banzai-cloud-logo.png
+maintainers:
+- email: info@banzaicloud.com
+  name: Banzai Cloud
+name: backyards
+sources:
+- https://github.com/banzaicloud/backyards
+version: 0.1.1

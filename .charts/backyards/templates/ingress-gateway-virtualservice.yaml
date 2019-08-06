@@ -1,0 +1,56 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "ingressgateway.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "ingressgateway.name" . }}
+    app.kubernetes.io/name: {{ include "ingressgateway.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: ingressgateway
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - {{ include "ingressgateway.fullname" . }}
+  http:
+    - match:
+      - uri:
+          prefix: /api
+      - uri:
+          prefix: /version
+      route:
+        - destination:
+            host: {{ include "backyards.fullname" . }}
+            port:
+              number: {{ .Values.application.service.port }}
+    - match:
+      - uri:
+          prefix: /api/version
+      rewrite:
+        uri: /version
+      route:
+        - destination:
+            host: {{ include "backyards.fullname" . }}
+            port:
+              number: {{ .Values.application.service.port }}
+    - match:
+      - uri:
+          prefix: {{ .Values.prometheus.externalUrl }}
+      route:
+        - destination:
+            host: {{ include "prometheus.fullname" . }}
+            port:
+              number: {{ .Values.prometheus.service.port }}
+    - match:
+      - uri:
+          prefix: /
+      route:
+        - destination:
+            host: {{ include "backyards.fullname" . }}-web
+            port:
+              number: {{ .Values.web.service.port }}

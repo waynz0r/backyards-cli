@@ -1,0 +1,102 @@
+apiVersion: config.istio.io/v1alpha2
+kind: instance
+metadata:
+  name: {{ include "backyards.fullname" . }}
+  namespace: {{ .Values.istio.namespace }}
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  compiledTemplate: metric
+  params:
+    monitored_resource_type: '"UNSPECIFIED"'
+    value: "1"
+    dimensions:
+      source_owner: source.owner | "unknown"
+      source_workload_uid: source.workload.uid | "unknown"
+      source_workload: source.workload.name | "unknown"
+      source_workload_namespace: source.workload.namespace | "unknown"
+      source_app: source.labels["app"] | "unknown"
+      source_cluster_id: conditional((source.cluster.id | "unknown") != "unknown", source.cluster.id, "master")
+      source_version: source.labels["version"] | "unknown"
+      destination_owner: destination.owner | "unknown"
+      destination_workload_uid: destination.workload.uid | "unknown"
+      destination_workload: destination.workload.name | "unknown"
+      destination_workload_namespace: destination.workload.namespace | "unknown"
+      destination_service_uid: destination.service.uid | "unknown"
+      destination_service_name: destination.service.name | "unknown"
+      destination_service_namespace: destination.service.namespace | "unknown"
+      destination_app: destination.labels["app"] | "unknown"
+      destination_cluster_id: conditional((destination.cluster.id | "unknown") != "unknown", destination.cluster.id, "master")
+      destination_version: destination.labels["version"] | "unknown"
+      request_protocol: api.protocol | context.protocol | "unknown"
+      security_policy: conditional((context.reporter.kind | "inbound") == "outbound", "unknown", conditional(connection.mtls | false, "mutual_tls", "none"))
+      reporter: conditional((context.reporter.kind | "inbound") == "outbound", "source", "destination")
+      response_code: response.code | 200
+---
+apiVersion: config.istio.io/v1alpha2
+kind: handler
+metadata:
+  name: {{ include "backyards.fullname" . }}
+  namespace: {{ .Values.istio.namespace }}
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  compiledAdapter: prometheus
+  params:
+    metrics:
+    - name: request_edges # Prometheus metric name
+      instance_name: {{ printf "%s.%s.%s" (include "backyards.fullname" .) "instance" .Values.istio.namespace }}
+      kind: COUNTER
+      label_names:
+        - source_owner
+        - source_workload_uid
+        - source_workload
+        - source_workload_namespace
+        - source_app
+        - source_cluster_id
+        - source_version
+        - destination_owner
+        - destination_workload_uid
+        - destination_workload
+        - destination_workload_namespace
+        - destination_service_uid
+        - destination_service_name
+        - destination_service_namespace
+        - destination_app
+        - destination_cluster_id
+        - destination_version
+        - request_protocol
+        - security_policy
+        - reporter
+        - response_code
+---
+# Rule to send metric instances to a Prometheus handler
+apiVersion: config.istio.io/v1alpha2
+kind: rule
+metadata:
+  name: {{ include "backyards.fullname" . }}
+  namespace: {{ .Values.istio.namespace }}
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  actions:
+  - handler: {{ include "backyards.fullname" . }}
+    instances: [{{- printf "%s.%s.%s" (include "backyards.fullname" .) "instance" .Values.istio.namespace -}}]

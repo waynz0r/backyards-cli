@@ -1,0 +1,7 @@
+apiVersion: v1
+appVersion: 0.1.0
+description: canary-operator manages canary deployments
+name: canary-operator
+sources:
+- https://github.com/banzaicloud/canary-operator
+version: 0.1.2
