@@ -1,10 +1,10 @@
 ## backyards
 
-install and manage Backyards
+Install and manage Backyards
 
 ### Synopsis
 
-install and manage Backyards
+Install and manage Backyards
 
 ### Options
 
@@ -18,11 +18,11 @@ install and manage Backyards
 
 ### SEE ALSO
 
-* [backyards canary](backyards_canary.md)	 - install and manage Canary feature
+* [backyards canary](backyards_canary.md)	 - Install and manage Canary feature
 * [backyards dashboard](backyards_dashboard.md)	 - Open the Backyards dashboard in a web browser
-* [backyards demoapp](backyards_demoapp.md)	 - install and manage demo application
+* [backyards demoapp](backyards_demoapp.md)	 - Install and manage demo application
 * [backyards install](backyards_install.md)	 - Install Backyards
-* [backyards istio](backyards_istio.md)	 - install and manage Istio
+* [backyards istio](backyards_istio.md)	 - Install and manage Istio
 * [backyards uninstall](backyards_uninstall.md)	 - Uninstalls Backyards
 * [backyards version](backyards_version.md)	 - Print the client and api version information
 

@@ -1,10 +1,10 @@
 ## backyards istio
 
-install and manage Istio
+Install and manage Istio
 
 ### Synopsis
 
-install and manage Istio
+Install and manage Istio
 
 ### Options
 
@@ -23,7 +23,7 @@ install and manage Istio
 
 ### SEE ALSO
 
-* [backyards](backyards.md)	 - install and manage Backyards
+* [backyards](backyards.md)	 - Install and manage Backyards
 * [backyards istio install](backyards_istio_install.md)	 - Installs Istio utilizing Banzai Cloud's Istio-operator
 * [backyards istio uninstall](backyards_istio_uninstall.md)	 - Output or delete Kubernetes resources to uninstall Istio
 
