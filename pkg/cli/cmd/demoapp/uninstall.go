@@ -47,8 +47,8 @@ func newUninstallCommand(cli cli.CLI) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "uninstall [flags]",
 		Args:  cobra.NoArgs,
-		Short: "Output or delete Kubernetes resources to uninstall Canary feature",
-		Long: `Output or delete Kubernetes resources to uninstall Canary feature.
+		Short: "Output or delete Kubernetes resources to uninstall demo application",
+		Long: `Output or delete Kubernetes resources to uninstall demo application.
 
 The command automatically removes the resources.
 It can only dump the removable resources with the '--dump-resources' option.`,

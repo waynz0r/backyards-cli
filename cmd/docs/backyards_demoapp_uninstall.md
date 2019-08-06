@@ -1,10 +1,10 @@
 ## backyards demoapp uninstall
 
-Output or delete Kubernetes resources to uninstall Canary feature
+Output or delete Kubernetes resources to uninstall demo application
 
 ### Synopsis
 
-Output or delete Kubernetes resources to uninstall Canary feature.
+Output or delete Kubernetes resources to uninstall demo application.
 
 The command automatically removes the resources.
 It can only dump the removable resources with the '--dump-resources' option.
