@@ -6,6 +6,9 @@ OS = $(shell uname)
 PACKAGE = github.com/banzaicloud/backyards-cli
 BINARY_NAME = backyards
 
+# Helm charts
+CHARTS_DIR ?= .charts
+
 # Build variables
 BUILD_DIR ?= build
 BUILD_PACKAGE = ${PACKAGE}/cmd/backyards
@@ -50,8 +53,7 @@ pre-build: ## Pre build bundles of static assets
 	go generate ${BUILD_PACKAGE}
 
 .PHONY: build
-build: ## Build a binary
-# build: pre-build
+build: pre-build ## Build a binary
 ifeq (${VERBOSE}, 1)
 	go env
 endif
@@ -170,6 +172,14 @@ major: ## Release a new major version
 .PHONY: list
 list: ## List all make targets
 	@${MAKE} -pRrn : -f $(MAKEFILE_LIST) 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | sort
+
+.PHONY: download-charts
+download-charts: ## Download Helm charts
+	scripts/download-charts.sh ${CHARTS_DIR}
+
+.PHONY: check-charts-diff
+check-charts-diff: ## Check whether the local charts differs
+	scripts/check-charts-diff.sh
 
 .PHONY: help
 .DEFAULT_GOAL := help

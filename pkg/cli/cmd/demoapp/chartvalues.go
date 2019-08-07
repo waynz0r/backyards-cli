@@ -14,19 +14,24 @@
 
 package demoapp
 
+import (
+	"github.com/banzaicloud/backyards-cli/pkg/helm"
+)
+
 type Values struct {
-	Replicas       int `json:"replicas"`
-	Services       bool `json:"services"`
-	IstioResources bool `json:"istioresources"`
-	Analytics      bool `json:"analytics"`
-	Bookings       bool `json:"bookings"`
-	Catalog        bool `json:"catalog"`
-	Frontpage      bool `json:"frontpage"`
-	MoviesV1       bool `json:"moviesv1"`
-	MoviesV2       bool `json:"moviesv2"`
-	MoviesV3       bool `json:"moviesv3"`
-	Notifications  bool `json:"notifications"`
-	Payments       bool `json:"payments"`
+	Replicas       int        `json:"replicas"`
+	Image          helm.Image `json:"image"`
+	Services       bool       `json:"services"`
+	IstioResources bool       `json:"istioresources"`
+	Analytics      bool       `json:"analytics"`
+	Bookings       bool       `json:"bookings"`
+	Catalog        bool       `json:"catalog"`
+	Frontpage      bool       `json:"frontpage"`
+	MoviesV1       bool       `json:"moviesv1"`
+	MoviesV2       bool       `json:"moviesv2"`
+	MoviesV3       bool       `json:"moviesv3"`
+	Notifications  bool       `json:"notifications"`
+	Payments       bool       `json:"payments"`
 
 	UseNamespaceResource bool `json:"useNamespaceResource"`
 }

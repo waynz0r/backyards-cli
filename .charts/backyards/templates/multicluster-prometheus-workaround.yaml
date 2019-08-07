@@ -1,0 +1,69 @@
+{{- if not .Values.prometheus.enabled }}
+# When multiple Prometheus instances are running outside the mesh in a multi-cluster setup
+# remote Prometheus instances could only be reached using mTLS and the local one without it.
+# Create a special host to only reach the local Prometheus without mTLS.
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ include "prometheus.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "prometheus.name" . }}
+    app.kubernetes.io/name: {{ include "prometheus.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  hosts:
+  - prometheus.{{ .Release.Namespace }}.svc.cluster.local
+  ports:
+  - number: 80
+    name: http
+    protocol: HTTP
+  location: MESH_EXTERNAL
+  resolution: DNS
+  endpoints:
+  - address: {{ required "Prometheus host is required!" .Values.prometheus.host }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ include "prometheus.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "prometheus.name" . }}
+    app.kubernetes.io/name: {{ include "prometheus.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  host: prometheus.{{ .Release.Namespace }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "prometheus.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "prometheus.name" . }}
+    app.kubernetes.io/name: {{ include "prometheus.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  hosts:
+  - {{  required "Prometheus host is required!" .Values.prometheus.host }}
+  http:
+  - route:
+    - destination:
+        host: prometheus.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}

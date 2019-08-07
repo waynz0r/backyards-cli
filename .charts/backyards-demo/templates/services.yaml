@@ -1,0 +1,114 @@
+{{ if .Values.services }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: analytics
+    service: analytics
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: analytics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookings
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: bookings
+    service: bookings
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: bookings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: catalog
+    service: catalog
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: catalog
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontpage
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: frontpage
+    service: frontpage
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: frontpage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: movies
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: movies
+    service: movies
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: movies
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: notifications
+    service: notifications
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: notifications
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: payments
+    service: payments
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: payments
+---
+{{ end }}

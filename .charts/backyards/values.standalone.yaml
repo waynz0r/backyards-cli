@@ -1,0 +1,32 @@
+fullnameOverride: backyards
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+ingress:
+  enabled: true
+  hosts:
+    - 127.0.0.1.xip.io
+  annotations:
+    kubernetes.io/ingress.class: istio
+  paths:
+    application: /api/.*
+    web: /.*
+web:
+  enabled: true
+istio:
+  namespace: istio-system
+  serviceAccountName: istio-ingressgateway-service-account
+prometheus:
+  enabled: true
+  externalUrl: /prometheus
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi

@@ -1,0 +1,15 @@
+{{- if .Values.useNamespaceResource }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: {{ include "canary-operator.name" . }}
+    app.kubernetes.io/name: {{ include "canary-operator.name" . }}
+    helm.sh/chart: {{ include "canary-operator.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/part-of: {{ include "canary-operator.name" . }}
+    istio-injection: enabled
+  name: {{ .Release.Namespace }}
+{{- end }}

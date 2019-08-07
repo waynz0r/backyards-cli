@@ -16,6 +16,11 @@ jobs:
             - checkout
 
             -
+                run:
+                    name: Check chart differences
+                    command: make check-charts-diff
+
+            -
                 restore_cache:
                     name: Restore build dependencies
                     keys:
@@ -122,12 +127,6 @@ jobs:
                         - gomod-v1-{{ .Branch }}
                         - gomod-v1-master
                         - gomod-v1
-
-            -
-                run:
-                    name: Bundle assets
-                    command: make client-bundle
-
 
             -
                 run:

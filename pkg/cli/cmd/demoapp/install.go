@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/meshdemo"
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/backyards_demo"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
@@ -99,7 +99,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 		return nil
 	}
 
-	objects, err := getMeshdemoObjects(options.namespace)
+	objects, err := getBackyardsDemoObjects(options.namespace)
 	if err != nil {
 		return err
 	}
@@ -126,10 +126,10 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	return nil
 }
 
-func getMeshdemoObjects(namespace string) (object.K8sObjects, error) {
+func getBackyardsDemoObjects(namespace string) (object.K8sObjects, error) {
 	var values Values
 
-	valuesYAML, err := helm.GetDefaultValues(meshdemo.Chart)
+	valuesYAML, err := helm.GetDefaultValues(backyards_demo.Chart)
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not get helm default values")
 	}
@@ -146,8 +146,8 @@ func getMeshdemoObjects(namespace string) (object.K8sObjects, error) {
 		return nil, errors.WrapIf(err, "could not marshal yaml values")
 	}
 
-	objects, err := helm.Render(meshdemo.Chart, string(rawValues), helm.ReleaseOptions{
-		Name:      "meshdemo",
+	objects, err := helm.Render(backyards_demo.Chart, string(rawValues), helm.ReleaseOptions{
+		Name:      "backyards-demo",
 		IsInstall: true,
 		IsUpgrade: false,
 		Namespace: namespace,

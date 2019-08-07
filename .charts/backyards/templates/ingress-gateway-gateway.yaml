@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ include "ingressgateway.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "ingressgateway.name" . }}
+    app.kubernetes.io/name: {{ include "ingressgateway.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: ingressgateway
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  selector:
+    app.kubernetes.io/name: {{ include "ingressgateway.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"

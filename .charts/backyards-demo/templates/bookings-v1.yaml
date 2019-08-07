@@ -1,0 +1,32 @@
+{{ if .Values.bookings }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bookings-v1
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: bookings
+    version: v1
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: bookings
+        version: v1
+    spec:
+      containers:
+      - name: bookings
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+        env:
+        - name: WORKLOAD
+          value: Echo
+        - name: ECHO_STR
+          value: "bookings service response"
+        - name: REQUESTS
+          value: "http://analytics:8080/#1 http://payments:8080/#1"
+{{ end }}

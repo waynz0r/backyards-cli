@@ -1,0 +1,80 @@
+{{- if .Values.prometheus.enabled }}
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: {{ include "prometheus.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "prometheus.fullname" . }}
+    app.kubernetes.io/name: {{ include "prometheus.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: prometheus
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+spec:
+  replicas: {{ .Values.prometheus.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "prometheus.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: prometheus
+      app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "prometheus.fullname" . }}
+        app.kubernetes.io/name: {{ include "prometheus.name" . }}
+        helm.sh/chart: {{ include "backyards.chart" . }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+        app.kubernetes.io/component: prometheus
+        app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    spec:
+      serviceAccountName: {{ include "prometheus.fullname" . }}
+      volumes:
+      - name: data
+        emptyDir: {}
+      - name: prometheus-config
+        configMap:
+          name: {{ include "prometheus.fullname" . }}
+      containers:
+      - name: prometheus
+        ports:
+        - name: http
+          containerPort: 9090
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: prometheus-config
+          mountPath: /etc/prometheus
+          readOnly: true
+        image: "{{ required "A prometheus image name is required!" .Values.prometheus.image.repository }}:{{ required "An prometheus image tag is required!" .Values.prometheus.image.tag }}"
+        imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+        args:
+        - "--storage.tsdb.path=/data"
+        - "--storage.tsdb.retention.time=6h"
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        - "--log.level=info"
+        - "--web.external-url={{ .Values.prometheus.externalUrl }}"
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.prometheus.externalUrl }}/-/ready
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.prometheus.externalUrl }}/-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        {{- with .Values.prometheus.resources }}
+        resources:
+          {{ toYaml . | nindent 10 }}
+        {{- end }}
+        securityContext:
+          runAsUser: 65534
+{{- end }}

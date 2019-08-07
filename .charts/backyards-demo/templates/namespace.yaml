@@ -1,0 +1,9 @@
+{{- if .Values.useNamespaceResource }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+{{ include "backyards-demo.labels" . | indent 4 }}
+    istio-injection: enabled
+{{- end }}

@@ -50,9 +50,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	err = vfsgen.Generate(static.MeshdemoChartSource, vfsgen.Options{
-		Filename:     "static/meshdemo/chart.gogen.go",
-		PackageName:  "meshdemo",
+	err = vfsgen.Generate(static.BackyardsDemoChartSource, vfsgen.Options{
+		Filename:     "static/backyards_demo/chart.gogen.go",
+		PackageName:  "backyards_demo",
 		VariableName: "Chart",
 	})
 	if err != nil {
