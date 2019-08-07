@@ -120,7 +120,8 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	objs = append(objs, istioCRObj)
 
 	if !options.dumpResources {
-		err := c.applyResources(crds, objs)
+		wait := true
+		err := c.applyResources(crds, objs, wait)
 		if err != nil {
 			return errors.WrapIf(err, "could not apply resources")
 		}
@@ -149,7 +150,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	return nil
 }
 
-func (c *installCommand) applyResources(crds, objects object.K8sObjects) error {
+func (c *installCommand) applyResources(crds, objects object.K8sObjects, waitForResources bool) error {
 	client, err := c.cli.GetK8sClient()
 	if err != nil {
 		return err
@@ -176,6 +177,18 @@ func (c *installCommand) applyResources(crds, objects object.K8sObjects) error {
 	err = k8s.ApplyResources(client, objects)
 	if err != nil {
 		return errors.WrapIf(err, "could not apply k8s resources")
+	}
+
+	if waitForResources {
+		err = k8s.Wait(client, objects, k8s.WaitForDeployments(wait.Backoff{
+			Duration: time.Second * 5,
+			Factor:   1,
+			Jitter:   0,
+			Steps:    10,
+		}))
+		if err != nil {
+			return errors.WrapIf(err, "error while wait for deployments")
+		}
 	}
 
 	return nil

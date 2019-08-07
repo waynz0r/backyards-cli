@@ -79,6 +79,10 @@ func ApplyResources(client k8sclient.Client, objects object.K8sObjects, postReso
 			}
 			log.Infof("%s configured", objectName)
 		} else {
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
+				log.Error(err, "failed to set last applied annotation", "desired", desired)
+			}
+
 			err = client.Create(context.Background(), desired)
 			if err != nil {
 				return errors.WrapIfWithDetails(err, "could not create resource", "name", objectName)
