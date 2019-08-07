@@ -53,8 +53,7 @@ pre-build: ## Pre build bundles of static assets
 	go generate ${BUILD_PACKAGE}
 
 .PHONY: build
-build: ## Build a binary
-# build: pre-build
+build: pre-build ## Build a binary
 ifeq (${VERBOSE}, 1)
 	go env
 endif
