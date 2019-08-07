@@ -28,6 +28,9 @@ type Values struct {
 
 	RBAC struct {
 		Enabled bool `json:"enabled"`
+		PSP     struct {
+			Enabled bool `json:"enabled"`
+		} `json:"psp"`
 	} `json:"rbac"`
 
 	PrometheusMetrics struct {
