@@ -1,0 +1,35 @@
+{{ if .Values.analytics }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: analytics-v1
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: analytics
+    version: v1
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: analytics
+        version: v1
+    spec:
+      containers:
+      - name: analytics
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+        env:
+        - name: WORKLOAD
+          value: PI
+        - name: PI_COUNT
+          value: "1000"
+{{ end }}

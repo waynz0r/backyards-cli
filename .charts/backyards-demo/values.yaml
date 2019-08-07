@@ -1,0 +1,24 @@
+# Default values for backyards-demo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicas: 2
+
+image:
+  repository: banzaicloud/allspark
+  tag: "0.0.2"
+  pullPolicy: IfNotPresent
+
+services: true
+
+istioresources: true
+
+analytics: true
+bookings: true
+catalog: true
+frontpage: true
+moviesv1: true
+moviesv2: true
+moviesv3: true
+notifications: true
+payments: true

@@ -1,0 +1,37 @@
+{{ if .Values.frontpage }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frontpage-v1
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: frontpage
+    version: v1
+{{ include "backyards-demo.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: frontpage
+        version: v1
+    spec:
+      containers:
+      - name: frontpage
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+        env:
+        - name: WORKLOAD
+          value: Echo
+        - name: ECHO_STR
+          value: "frontpage"
+        - name: REQUESTS
+          value: "http://catalog:8080/#2 http://bookings:8080#1"
+{{ end }}

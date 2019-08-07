@@ -24,3 +24,11 @@ retVal=$?
 if [ $retVal -ne 0 ]; then
     exit $retVal
 fi
+
+curl -s https://kubernetes-charts.banzaicloud.com/charts/backyards-demo-${BACKYARDS_DEMO_CHART_VERSION}.tgz | tar -zxv --directory ${CHARTS_DIR}/ -f -
+retVal=$?
+if [ $retVal -ne 0 ]; then
+    exit $retVal
+fi
+
+find ${CHARTS_DIR}/ -exec touch -t 201901010101 {} +
