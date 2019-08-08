@@ -23,6 +23,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/spf13/cobra"
 	"istio.io/operator/pkg/object"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -120,8 +121,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	objs = append(objs, istioCRObj)
 
 	if !options.dumpResources {
-		wait := true
-		err := c.applyResources(crds, objs, wait)
+		err := c.applyResources(crds, objs)
 		if err != nil {
 			return errors.WrapIf(err, "could not apply resources")
 		}
@@ -150,21 +150,28 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	return nil
 }
 
-func (c *installCommand) applyResources(crds, objects object.K8sObjects, waitForResources bool) error {
+func (c *installCommand) applyResources(crds, objects object.K8sObjects) error {
 	client, err := c.cli.GetK8sClient()
 	if err != nil {
 		return err
 	}
 
 	// apply CRDs first
-	err = k8s.ApplyResources(client, crds, k8s.WaitForCRD(wait.Backoff{
+	err = k8s.ApplyResources(client, crds)
+	if err != nil {
+		return errors.WrapIf(err, "could not apply k8s resources")
+	}
+
+	backoff := wait.Backoff{
 		Duration: time.Second * 5,
 		Factor:   1,
 		Jitter:   0,
-		Steps:    10,
-	}))
+		Steps:    25,
+	}
+
+	err = k8s.WaitForResourcesConditions(client, k8s.NamesWithGVKFromK8sObjects(crds), backoff, k8s.CRDEstablishedConditionCheck)
 	if err != nil {
-		return errors.WrapIf(err, "could not apply k8s resources")
+		return err
 	}
 
 	// reinitialize client after CRDs creations
@@ -179,19 +186,42 @@ func (c *installCommand) applyResources(crds, objects object.K8sObjects, waitFor
 		return errors.WrapIf(err, "could not apply k8s resources")
 	}
 
-	if waitForResources {
-		err = k8s.Wait(client, objects, k8s.WaitForDeployments(wait.Backoff{
-			Duration: time.Second * 5,
-			Factor:   1,
-			Jitter:   0,
-			Steps:    10,
-		}))
-		if err != nil {
-			return errors.WrapIf(err, "error while wait for deployments")
-		}
+	err = k8s.WaitForResourcesConditions(client, k8s.NamesWithGVKFromK8sObjects(objects, "StatefulSet"), backoff, k8s.ExistsConditionCheck, k8s.ReadyReplicasConditionCheck)
+	if err != nil {
+		return err
+	}
+	err = k8s.WaitForResourcesConditions(client, getIstioDeploymentsToWaitFor(), backoff, k8s.ExistsConditionCheck, k8s.ReadyReplicasConditionCheck)
+	if err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func getIstioDeploymentsToWaitFor() []k8s.NamespacedNameWithGVK {
+	deploymenNames := []string{
+		"istio-citadel",
+		"istio-sidecar-injector",
+		"istio-galley",
+		"istio-pilot",
+		"istio-policy",
+		"istio-telemetry",
+		"istio-egressgateway",
+		"istio-ingressgateway",
+	}
+
+	deployments := make([]k8s.NamespacedNameWithGVK, len(deploymenNames))
+	for i, name := range deploymenNames {
+		deployments[i] = k8s.NamespacedNameWithGVK{
+			NamespacedName: types.NamespacedName{
+				Name:      name,
+				Namespace: istioNamespace,
+			},
+			GroupVersionKind: appsv1.SchemeGroupVersion.WithKind("Deployment"),
+		}
+	}
+
+	return deployments
 }
 
 func getIstioOperatorObjects(releaseName string) (object.K8sObjects, error) {

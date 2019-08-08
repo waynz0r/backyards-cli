@@ -18,11 +18,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/spf13/cobra"
 	"istio.io/operator/pkg/object"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
@@ -111,6 +113,16 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 		}
 
 		err = k8s.ApplyResources(client, objects)
+		if err != nil {
+			return err
+		}
+
+		err = k8s.WaitForResourcesConditions(client, k8s.NamesWithGVKFromK8sObjects(objects), wait.Backoff{
+			Duration: time.Second * 5,
+			Factor:   1,
+			Jitter:   0,
+			Steps:    24,
+		}, k8s.ExistsConditionCheck, k8s.ReadyReplicasConditionCheck)
 		if err != nil {
 			return err
 		}
