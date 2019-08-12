@@ -21,5 +21,6 @@ spec:
   ports:
   - name: http-admin
     port: {{ .Values.prometheus.service.port }}
+    protocol: TCP
     targetPort: http
 {{- end }}

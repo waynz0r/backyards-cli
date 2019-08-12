@@ -16,9 +16,11 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
@@ -78,7 +80,12 @@ func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
 			return err
 		}
 
-		err = k8s.DeleteResources(client, objects)
+		err = k8s.DeleteResources(client, objects, k8s.WaitForResourceConditions(wait.Backoff{
+			Duration: time.Second * 5,
+			Factor:   1,
+			Jitter:   0,
+			Steps:    24,
+		}, k8s.NonExistsConditionCheck))
 		if err != nil {
 			return errors.WrapIf(err, "could not delete k8s resources")
 		}

@@ -218,6 +218,13 @@ func UninstallObjectOrder() func(o *object.K8sObject) int {
 		"PodSecurityPolicy",
 		"LimitRange",
 		"ResourceQuota",
+		"Policy",
+		"Gateway",
+		"VirtualService",
+		"DestinationRule",
+		"Handler",
+		"Instance",
+		"Rule",
 		"Namespace",
 		"CustomResourceDefinition",
 	}

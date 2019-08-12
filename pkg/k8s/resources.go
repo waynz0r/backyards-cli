@@ -43,7 +43,7 @@ type Object interface {
 
 type PostResourceApplyFunc func(k8sclient.Client, Object) error
 
-func ApplyResources(client k8sclient.Client, objects object.K8sObjects, postResourceApplyFuncs ...PostResourceApplyFunc) error {
+func ApplyResources(client k8sclient.Client, objects object.K8sObjects, waitFuncs ...WaitForResourceConditionsFunc) error {
 	var err error
 
 	for _, obj := range objects {
@@ -79,6 +79,10 @@ func ApplyResources(client k8sclient.Client, objects object.K8sObjects, postReso
 			}
 			log.Infof("%s configured", objectName)
 		} else {
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
+				log.Error(err, "failed to set last applied annotation", "desired", desired)
+			}
+
 			err = client.Create(context.Background(), desired)
 			if err != nil {
 				return errors.WrapIfWithDetails(err, "could not create resource", "name", objectName)
@@ -86,11 +90,12 @@ func ApplyResources(client k8sclient.Client, objects object.K8sObjects, postReso
 			log.Infof("%s created", objectName)
 		}
 
-		if len(postResourceApplyFuncs) > 0 {
-			for _, fn := range postResourceApplyFuncs {
+		if len(waitFuncs) > 0 {
+			for _, fn := range waitFuncs {
 				err = fn(client, actual)
 				if err != nil {
 					log.Error(err)
+					continue
 				}
 			}
 		}
@@ -101,7 +106,7 @@ func ApplyResources(client k8sclient.Client, objects object.K8sObjects, postReso
 
 type PostResourceDeleteFunc func(k8sclient.Client, Object) error
 
-func DeleteResources(client k8sclient.Client, objects object.K8sObjects, postResourceDeleteFuncs ...PostResourceDeleteFunc) error {
+func DeleteResources(client k8sclient.Client, objects object.K8sObjects, waitFuncs ...WaitForResourceConditionsFunc) error {
 	var err error
 
 	for _, obj := range objects {
@@ -120,8 +125,8 @@ func DeleteResources(client k8sclient.Client, objects object.K8sObjects, postRes
 				log.Error(err)
 			}
 
-			if len(postResourceDeleteFuncs) > 0 {
-				for _, fn := range postResourceDeleteFuncs {
+			if len(waitFuncs) > 0 {
+				for _, fn := range waitFuncs {
 					err = fn(client, actual)
 					if err != nil {
 						log.Error(err)

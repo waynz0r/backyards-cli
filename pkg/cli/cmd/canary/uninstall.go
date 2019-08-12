@@ -103,12 +103,12 @@ func (c *uninstallCommand) deleteResources(objects object.K8sObjects) error {
 		return err
 	}
 
-	err = k8s.DeleteResources(client, objects, k8s.WaitForFinalizers(wait.Backoff{
+	err = k8s.DeleteResources(client, objects, k8s.WaitForResourceConditions(wait.Backoff{
 		Duration: time.Second * 5,
 		Factor:   1,
 		Jitter:   0,
-		Steps:    10,
-	}))
+		Steps:    24,
+	}, k8s.NonExistsConditionCheck))
 	if err != nil {
 		return errors.WrapIf(err, "could not delete k8s resources")
 	}
