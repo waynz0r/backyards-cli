@@ -80,7 +80,7 @@ rules:
   - update
   - patch
   - delete
-- apiGroups: ["istio.banzaicloud.io"]
+- apiGroups: ["deployments.banzaicloud.io"]
   resources:
   - canaries
   verbs:
