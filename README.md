@@ -2,9 +2,7 @@ This is a command line interface under heavy development for [Backyards](https:/
 
 ### Installation
 
-```bash
-❯ go get github.com/banzaicloud/backyards-cli/cmd/backyards
-```
+Pre-built binaries are available in multiple package formats. Download the [latest release](https://github.com/banzaicloud/backyards-cli/releases).
 
 ### Use
 
