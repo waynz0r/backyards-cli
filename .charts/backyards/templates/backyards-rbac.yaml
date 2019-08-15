@@ -66,6 +66,8 @@ rules:
   - list
   - watch
   - edit
+  - update
+  - patch
 - apiGroups: ["networking.istio.io"]
   resources:
   - destinationrules
