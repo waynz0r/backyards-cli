@@ -95,6 +95,20 @@ type Values struct {
 		} `json:"service"`
 	} `json:"prometheus"`
 
+	Grafana struct {
+		Enabled         bool                        `json:"enabled"`
+		Image           helm.Image                  `json:"image"`
+		Resources       corev1.ResourceRequirements `json:"resources,omitempty"`
+		Persist         bool                        `json:"persist"`
+		Security struct {
+			Enabled       bool   `json:"enabled"`
+			UsernameKey   string `json:"usernameKey,omitempty"`
+			SecretName    string `json:"secretName,omitempty"`
+			PassphraseKey string `json:"passphraseKey,omitempty"`
+		} `json:"security"`
+		ExternalURL string `json:"externalUrl"`
+	} `json:"grafana"`
+
 	IngressGateway struct {
 		Service struct {
 			Type string `json:"type"`
@@ -145,4 +159,19 @@ func (values *Values) SetDefaults(releaseName, istioNamespace string) {
 	values.Prometheus.Config.Global.ScrapeInterval = "10s" //nolint
 	values.Prometheus.Config.Global.ScrapeTimeout = "10s"
 	values.Prometheus.Config.Global.EvaluationInterval = "10s"
+
+	values.Grafana.Enabled = true
+	values.Grafana.Resources = corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("128Mi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("200m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		},
+	}
+	values.Grafana.ExternalURL = "/grafana"
+	values.Grafana.Security.Enabled = false
+	values.Grafana.Persist = false
 }

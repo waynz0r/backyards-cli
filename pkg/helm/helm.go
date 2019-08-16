@@ -55,6 +55,25 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (o
 		},
 	}
 
+
+
+	dashdir, err := fs.Open("dashboards")
+	if err == nil {
+		dashFiles, err := dashdir.Readdir(-1)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, dashFile := range dashFiles {
+			filename := dashFile.Name()
+			if strings.HasSuffix(filename, "json") {
+				files = append(files, &chartutil.BufferedFile{
+					Name: "dashboards" + "/" + filename,
+				})
+			}
+		}
+	}
+
 	dir, err := fs.Open(chartutil.TemplatesDir)
 	if err != nil {
 		return nil, err
@@ -80,7 +99,9 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (o
 			return nil, err
 		}
 
-		data = append(data, []byte("\n---\n")...)
+		if strings.HasSuffix(f.Name, "yaml") || !strings.HasSuffix(f.Name, "yml") || !strings.HasSuffix(f.Name, "tpl") {
+			data = append(data, []byte("\n---\n")...)
+		}
 
 		f.Data = data
 	}
@@ -110,6 +131,9 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (o
 	// Merge templates and inject
 	var buf bytes.Buffer
 	for _, tmpl := range files {
+		if !strings.HasSuffix(tmpl.Name, "yaml") && !strings.HasSuffix(tmpl.Name, "yml") && !strings.HasSuffix(tmpl.Name, "tpl") {
+			continue
+		}
 		t := path.Join(renderOpts.ReleaseOptions.Name, tmpl.Name)
 		if _, err := buf.WriteString(renderedTemplates[t]); err != nil {
 			return nil, err
