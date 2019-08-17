@@ -113,6 +113,8 @@ grafana:
     tag: 6.3.0
     pullPolicy: Always
   resources: {}
+  security:
+    enabled: false
 
 ingressgateway:
   service:

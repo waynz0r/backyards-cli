@@ -1,6 +1,6 @@
 {{- if .Values.grafana.enabled }}
 {{- $files := .Files }}
-  {{- range $path, $bytes := .Files.Glob "dashboards/*.json" }}
+  {{- range $path, $bytes := .Files.Glob "resources/*.json" }}
   {{- $filename := trimSuffix (ext $path) (base $path) }}
 apiVersion: v1
 kind: ConfigMap

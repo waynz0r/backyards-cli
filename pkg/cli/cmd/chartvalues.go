@@ -99,7 +99,6 @@ type Values struct {
 		Enabled         bool                        `json:"enabled"`
 		Image           helm.Image                  `json:"image"`
 		Resources       corev1.ResourceRequirements `json:"resources,omitempty"`
-		Persist         bool                        `json:"persist"`
 		Security struct {
 			Enabled       bool   `json:"enabled"`
 			UsernameKey   string `json:"usernameKey,omitempty"`
@@ -173,5 +172,4 @@ func (values *Values) SetDefaults(releaseName, istioNamespace string) {
 	}
 	values.Grafana.ExternalURL = "/grafana"
 	values.Grafana.Security.Enabled = false
-	values.Grafana.Persist = false
 }
