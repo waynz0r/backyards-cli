@@ -1,0 +1,39 @@
+{{- if .Values.grafana.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "grafana.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "grafana.name" . }}
+    app.kubernetes.io/name: {{ include "grafana.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+data:
+  datasources.yaml: |-
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      orgId: 1
+      url: http://{{ include "prometheus.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:9090/prometheus
+      access: proxy
+      isDefault: true
+      jsonData:
+        timeInterval: 5s
+      editable: true
+  dashboardproviders.yaml: |-
+    apiVersion: 1
+    providers:
+    - name: 'istio'
+      orgId: 1
+      folder: 'istio'
+      type: file
+      disableDeletion: false
+      options:
+        path: /var/lib/grafana/dashboards/istio
+{{- end }}

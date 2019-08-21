@@ -30,3 +30,12 @@ prometheus:
     requests:
       cpu: 100m
       memory: 128Mi
+grafana:
+  enabled: false
+  externalUrl: /grafana
+  replicas: 1
+  image:
+    repository: grafana/grafana
+    tag: 6.3.0
+    pullPolicy: Always
+  resources: {}

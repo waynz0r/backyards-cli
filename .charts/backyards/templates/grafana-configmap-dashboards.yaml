@@ -1,0 +1,25 @@
+{{- if .Values.grafana.enabled }}
+{{- $files := .Files }}
+  {{- range $path, $bytes := .Files.Glob "resources/*.json" }}
+  {{- $filename := trimSuffix (ext $path) (base $path) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana.fullname" $ }}-dashboards-{{ $filename }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ include "grafana.name" $ }}
+    app.kubernetes.io/name: {{ include "grafana.name" $ }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/part-of: {{ include "backyards.name" $ }}
+    helm.sh/chart: {{ include "backyards.chart" $ }}
+data:
+  {{ base $path }}: |-
+{{ $files.Get $path | indent 4 }}
+
+---
+{{- end }}
+{{- end }}

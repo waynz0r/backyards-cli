@@ -48,6 +48,14 @@ spec:
               number: {{ .Values.prometheus.service.port }}
     - match:
       - uri:
+          prefix: {{ .Values.grafana.externalUrl }}
+      route:
+        - destination:
+            host: {{ include "grafana.fullname" . }}
+            port:
+              number: 3000
+    - match:
+      - uri:
           prefix: /
       route:
         - destination:

@@ -17,6 +17,7 @@ package helm
 import (
 	"bytes"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 
@@ -55,22 +56,28 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (o
 		},
 	}
 
-	dir, err := fs.Open(chartutil.TemplatesDir)
-	if err != nil {
-		return nil, err
-	}
+	// if the Helm chart templates use some resource files (like dashboards), those should be put under resources
 
-	chartFiles, err := dir.Readdir(-1)
-	if err != nil {
-		return nil, err
-	}
+	for _, dirName := range []string{"resources", chartutil.TemplatesDir} {
+		dir, err := fs.Open(dirName)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return nil, err
+			}
+		} else {
+			dirFiles, err := dir.Readdir(-1)
+			if err != nil {
+				return nil, err
+			}
 
-	for _, chartFile := range chartFiles {
-		filename := chartFile.Name()
-		if strings.HasSuffix(filename, "yaml") || strings.HasSuffix(filename, "yml") || strings.HasSuffix(filename, "tpl") {
-			files = append(files, &chartutil.BufferedFile{
-				Name: chartutil.TemplatesDir + "/" + filename,
-			})
+			for _, file := range dirFiles {
+				filename := file.Name()
+				if strings.HasSuffix(filename, "yaml") || strings.HasSuffix(filename, "yml") || strings.HasSuffix(filename, "tpl") || strings.HasSuffix(filename, "json") {
+					files = append(files, &chartutil.BufferedFile{
+						Name: dirName + "/" + filename,
+					})
+				}
+			}
 		}
 	}
 
@@ -79,8 +86,6 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (o
 		if err != nil {
 			return nil, err
 		}
-
-		data = append(data, []byte("\n---\n")...)
 
 		f.Data = data
 	}
@@ -110,10 +115,14 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (o
 	// Merge templates and inject
 	var buf bytes.Buffer
 	for _, tmpl := range files {
+		if !strings.HasSuffix(tmpl.Name, "yaml") && !strings.HasSuffix(tmpl.Name, "yml") && !strings.HasSuffix(tmpl.Name, "tpl") {
+			continue
+		}
 		t := path.Join(renderOpts.ReleaseOptions.Name, tmpl.Name)
 		if _, err := buf.WriteString(renderedTemplates[t]); err != nil {
 			return nil, err
 		}
+		buf.WriteString("\n---\n")
 	}
 
 	objects, err := object.ParseK8sObjectsFromYAMLManifest(buf.String())

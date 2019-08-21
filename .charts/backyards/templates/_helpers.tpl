@@ -10,6 +10,10 @@ Expand the name of the chart.
 {{- printf "%s-prometheus" (include "backyards.name" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "grafana.name" -}}
+{{- printf "%s-grafana" (include "backyards.name" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "ingressgateway.name" -}}
 {{- printf "%s-ingressgateway" (include "backyards.name" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -38,6 +42,14 @@ Create a default fully qualified app name for the Prometheus component
 {{- define "prometheus.fullname" -}}
 {{- printf "%s-prometheus" (include "backyards.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create a default fully qualified app name for the Grafana component
+*/}}
+{{- define "grafana.fullname" -}}
+{{- printf "%s-grafana" (include "backyards.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 
 {{/*
 Create a default fully qualified app name for the Ingress gateway component
