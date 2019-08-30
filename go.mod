@@ -18,6 +18,7 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31
+	github.com/waynz0r/grafterm v0.2.1-0.20190814214739-b7722452f1e4
 	go.uber.org/multierr v1.1.0
 	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4 // indirect
 	gopkg.in/yaml.v2 v2.2.2

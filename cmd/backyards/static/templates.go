@@ -43,6 +43,7 @@ var IstioAssetsSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "asset
 var CertManagerChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/cert-manager"))
 var CertManagerCainjectorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/cert-manager/charts/cainjector"))
 var CertManagerCRDSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/cert-manager"))
+var GraphTemplates http.FileSystem = http.Dir(path.Join(getRepoRoot(), ".graphtemplates"))
 
 // getRepoRoot returns the full path to the root of the repo
 func getRepoRoot() string {

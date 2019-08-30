@@ -94,4 +94,13 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	err = vfsgen.Generate(static.GraphTemplates, vfsgen.Options{
+		Filename:     "static/graphtemplates/graphtemplates.gogen.go",
+		PackageName:  "graphtemplates",
+		VariableName: "GraphTemplates",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }

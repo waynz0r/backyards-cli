@@ -131,4 +131,5 @@ func init() {
 	RootCmd.AddCommand(demoapp.NewRootCmd(cli))
 	RootCmd.AddCommand(routing.NewRootCmd(cli))
 	RootCmd.AddCommand(certmanager.NewRootCmd(cli))
+	RootCmd.AddCommand(NewGraphCmd(cli))
 }
