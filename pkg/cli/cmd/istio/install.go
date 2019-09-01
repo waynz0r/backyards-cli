@@ -15,8 +15,10 @@
 package istio
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -24,14 +26,13 @@ import (
 	"github.com/spf13/cobra"
 	"istio.io/operator/pkg/object"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/yaml"
 
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/istio_assets"
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/istio_operator"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
@@ -40,9 +41,8 @@ import (
 )
 
 const (
-	pilotDockerImage = "banzaicloud/istio-pilot:1.2.2-bzc"
-	mixerDockerImage = "banzaicloud/istio-mixer:1.2.2-bzc"
-	istioCRName      = "mesh"
+	istioCRName         = "mesh"
+	istioCRYamlFilename = "istio.yaml"
 )
 
 var (
@@ -57,8 +57,9 @@ type installCommand struct {
 }
 
 type installOptions struct {
-	releaseName   string
-	dumpResources bool
+	istioCRFilename string
+	releaseName     string
+	dumpResources   bool
 }
 
 func newInstallCommand(cli cli.CLI) *cobra.Command {
@@ -93,6 +94,7 @@ The installer automatically detects whether the CRDs are installed or not, and b
 
 	cmd.Flags().StringVar(&options.releaseName, "release-name", "istio-operator", "Name of the release")
 	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", false, "Dump resources to stdout instead of applying them")
+	cmd.Flags().StringVarP(&options.istioCRFilename, "istio-cr-file", "f", "", "Filename of a custom Istio CR yaml")
 
 	return cmd
 }
@@ -104,7 +106,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	}
 	objects.Sort(helm.InstallObjectOrder())
 
-	istioCRObj, err := getIstioCR()
+	istioCRObj, err := getIstioCR(options.istioCRFilename)
 	if err != nil {
 		return err
 	}
@@ -190,7 +192,7 @@ func (c *installCommand) applyResources(crds, objects object.K8sObjects) error {
 	if err != nil {
 		return err
 	}
-	err = k8s.WaitForResourcesConditions(client, getIstioDeploymentsToWaitFor(), backoff, k8s.ExistsConditionCheck, k8s.ReadyReplicasConditionCheck)
+	err = k8s.WaitForResourcesConditions(client, c.getIstioDeploymentsToWaitFor(), backoff, k8s.ExistsConditionCheck, k8s.ReadyReplicasConditionCheck)
 	if err != nil {
 		return err
 	}
@@ -198,16 +200,43 @@ func (c *installCommand) applyResources(crds, objects object.K8sObjects) error {
 	return nil
 }
 
-func getIstioDeploymentsToWaitFor() []k8s.NamespacedNameWithGVK {
-	deploymenNames := []string{
-		"istio-citadel",
-		"istio-sidecar-injector",
-		"istio-galley",
-		"istio-pilot",
-		"istio-policy",
-		"istio-telemetry",
-		"istio-egressgateway",
-		"istio-ingressgateway",
+func (c *installCommand) getIstioDeploymentsToWaitFor() []k8s.NamespacedNameWithGVK {
+	var istioCR v1beta1.Istio
+
+	client, _ := c.cli.GetK8sClient()
+	err := client.Get(context.Background(), types.NamespacedName{
+		Name:      istioCRName,
+		Namespace: istioNamespace,
+	}, &istioCR)
+	if err != nil {
+		panic(err)
+	}
+
+	deploymenNames := make([]string, 0)
+
+	if istioCR.Spec.Citadel.Enabled != nil && *istioCR.Spec.Citadel.Enabled {
+		deploymenNames = append(deploymenNames, "istio-citadel")
+	}
+	if istioCR.Spec.SidecarInjector.Enabled != nil && *istioCR.Spec.SidecarInjector.Enabled {
+		deploymenNames = append(deploymenNames, "istio-sidecar-injector")
+	}
+	if istioCR.Spec.Galley.Enabled != nil && *istioCR.Spec.Galley.Enabled {
+		deploymenNames = append(deploymenNames, "istio-galley")
+	}
+	if istioCR.Spec.Pilot.Enabled != nil && *istioCR.Spec.Pilot.Enabled {
+		deploymenNames = append(deploymenNames, "istio-pilot")
+	}
+	if istioCR.Spec.Mixer.Enabled != nil && *istioCR.Spec.Mixer.Enabled {
+		deploymenNames = append(deploymenNames, "istio-policy")
+		deploymenNames = append(deploymenNames, "istio-telemetry")
+	}
+	if istioCR.Spec.Gateways.Enabled != nil && *istioCR.Spec.Gateways.Enabled {
+		if istioCR.Spec.Gateways.IngressConfig.Enabled != nil && *istioCR.Spec.Gateways.IngressConfig.Enabled {
+			deploymenNames = append(deploymenNames, "istio-ingressgateway")
+		}
+		if istioCR.Spec.Gateways.EgressConfig.Enabled != nil && *istioCR.Spec.Gateways.EgressConfig.Enabled {
+			deploymenNames = append(deploymenNames, "istio-egressgateway")
+		}
 	}
 
 	deployments := make([]k8s.NamespacedNameWithGVK, len(deploymenNames))
@@ -257,43 +286,33 @@ func getIstioOperatorObjects(releaseName string) (object.K8sObjects, error) {
 	return objects, nil
 }
 
-func getIstioCR() (*object.K8sObject, error) {
-	istio := &v1beta1.Istio{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      istioCRName,
-			Namespace: istioNamespace,
-		},
+func getIstioCR(filename string) (*object.K8sObject, error) {
+	var err error
+	var istioCRFile http.File
+	if filename != "" {
+		istioCRFile, err = os.Open(filename)
+	} else {
+		istioCRFile, err = istio_assets.Assets.Open(istioCRYamlFilename)
 	}
-
-	v1beta1.SetDefaults(istio)
-
-	istio.Spec.MTLS = true
-	istio.Spec.ControlPlaneSecurityEnabled = true
-	istio.Spec.SidecarInjector.RewriteAppHTTPProbe = true
-	istio.Spec.Version = "1.2"
-	istio.Spec.ImagePullPolicy = corev1.PullAlways
-	istio.Spec.Gateways.IngressConfig.MaxReplicas = 1
-	istio.Spec.Gateways.EgressConfig.MaxReplicas = 1
-	istio.Spec.Pilot = v1beta1.PilotConfiguration{
-		Image:       pilotDockerImage,
-		MaxReplicas: 1,
-	}
-	istio.Spec.Mixer = v1beta1.MixerConfiguration{
-		Image:       mixerDockerImage,
-		MaxReplicas: 1,
-	}
-
-	y, err := yaml.Marshal(istio)
 	if err != nil {
-		return nil, errors.WrapIf(err, "could not marshal Istio resource to YAML")
+		return nil, errors.WrapIf(err, "could not open Istio CR YAML")
+	}
+	defer istioCRFile.Close()
+
+	yaml := new(bytes.Buffer)
+	_, err = yaml.ReadFrom(istioCRFile)
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not read Istio CR YAML")
 	}
 
-	yaml := fmt.Sprintf("apiVersion: %s\nkind: %s\n%s", v1beta1.SchemeGroupVersion.String(), "Istio", string(y))
-
-	obj, err := object.ParseYAMLToK8sObject([]byte(yaml))
+	obj, err := object.ParseYAMLToK8sObject(yaml.Bytes())
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not parse Istio YAML to K8s object")
 	}
+
+	metadata := obj.UnstructuredObject().Object["metadata"].(map[string]interface{})
+	metadata["namespace"] = istioNamespace
+	metadata["name"] = istioCRName
 
 	return obj, nil
 }

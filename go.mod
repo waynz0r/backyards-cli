@@ -6,7 +6,7 @@ require (
 	emperror.dev/errors v0.4.2
 	emperror.dev/handler/logrus v0.1.0
 	github.com/Masterminds/sprig v2.20.0+incompatible // indirect
-	github.com/banzaicloud/istio-operator v0.0.0-20190718114627-1ab22cbb3d0c
+	github.com/banzaicloud/istio-operator v0.0.0-20190821151858-a47cd7d9bc7a
 	github.com/banzaicloud/k8s-objectmatcher v1.0.0
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/sirupsen/logrus v1.4.2

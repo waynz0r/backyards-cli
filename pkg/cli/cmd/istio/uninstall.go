@@ -77,7 +77,7 @@ func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
 	}
 	objects.Sort(helm.UninstallObjectOrder())
 
-	istioCRObj, err := getIstioCR()
+	istioCRObj, err := getIstioCR("")
 	if err != nil {
 		return err
 	}
