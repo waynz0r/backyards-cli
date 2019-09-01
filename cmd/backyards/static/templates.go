@@ -24,16 +24,19 @@ import (
 )
 
 // Chart that will be rendered by `backyards install`
-var BackyardsChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), ".charts/backyards"))
+var BackyardsChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/backyards"))
 
 // Chart that will be rendered by `backyards istio install`
-var IstioOperatorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), ".charts/istio-operator"))
+var IstioOperatorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/istio-operator"))
 
 // Chart that will be rendered by `backyards canary install`
-var CanaryOperatorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), ".charts/canary-operator"))
+var CanaryOperatorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/canary-operator"))
 
 // Chart that will be rendered by `backyards demoapp install`
-var BackyardsDemoChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), ".charts/backyards-demo"))
+var BackyardsDemoChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/backyards-demo"))
+
+// Istio assets
+var IstioAssetsSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/istio"))
 
 // getRepoRoot returns the full path to the root of the repo
 func getRepoRoot() string {

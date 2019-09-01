@@ -58,4 +58,13 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	err = vfsgen.Generate(static.IstioAssetsSource, vfsgen.Options{
+		Filename:     "static/istio_assets/assets.gogen.go",
+		PackageName:  "istio_assets",
+		VariableName: "Assets",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }

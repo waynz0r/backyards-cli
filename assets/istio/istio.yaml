@@ -1,0 +1,20 @@
+apiVersion: istio.banzaicloud.io/v1beta1
+kind: Istio
+metadata:
+  name: mesh
+spec:
+  version: "1.2.4"
+  mtls: true
+  controlPlaneSecurityEnabled: true
+  sidecarInjector:
+    rewriteAppHTTPProbe: true
+  imagePullPolicy: Always
+  gateways:
+    ingress:
+      maxReplicas: 1
+    egress:
+      enabled: false
+  pilot:
+    image: banzaicloud/istio-pilot:1.2.2-bzc
+  mixer:
+    image: banzaicloud/istio-mixer:1.2.2-bzc
