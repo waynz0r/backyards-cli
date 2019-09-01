@@ -84,7 +84,7 @@ func (c *versionCommand) run(cli cli.CLI, options *versionOptions) {
 }
 
 func getAPIVersion(cli cli.CLI, versionEndpoint string) string {
-	pf, err := cli.GetPortforwardForPod(IGWMatchLabels, backyardsNamespace, 0, IGWPort)
+	pf, err := cli.GetPortforwardForIGW(0)
 	if err != nil {
 		return defaultVersionString
 	}

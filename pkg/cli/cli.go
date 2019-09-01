@@ -27,11 +27,20 @@ import (
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
+var (
+	IGWPort        = 80
+	IGWMatchLabels = map[string]string{
+		"app.kubernetes.io/component": "ingressgateway",
+		"app.kubernetes.io/instance":  "backyards",
+	}
+)
+
 type CLI interface {
 	Out() io.Writer
 	GetK8sClient() (k8sclient.Client, error)
 	GetK8sConfig() (*rest.Config, error)
 	GetPortforwardForPod(podLabels map[string]string, namespace string, localPort, remotePort int) (*portforward.Portforward, error)
+	GetPortforwardForIGW(localPort int) (*portforward.Portforward, error)
 }
 
 type backyardsCLI struct {
@@ -46,6 +55,10 @@ func NewCli(out io.Writer) CLI {
 
 func (c *backyardsCLI) Out() io.Writer {
 	return c.out
+}
+
+func (c *backyardsCLI) GetPortforwardForIGW(localPort int) (*portforward.Portforward, error) {
+	return c.GetPortforwardForPod(IGWMatchLabels, viper.GetString("backyards.namespace"), localPort, IGWPort)
 }
 
 func (c *backyardsCLI) GetPortforwardForPod(podLabels map[string]string, namespace string, localPort, remotePort int) (*portforward.Portforward, error) {

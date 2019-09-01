@@ -44,6 +44,7 @@ An existing Istio installation is required. You can install it with:
 
 backyards istio install
 `
+	defaultReleaseName = "backyards"
 )
 
 var (
@@ -65,6 +66,7 @@ type installOptions struct {
 	installDemoapp    bool
 	installIstio      bool
 	installEverything bool
+	runDemo           bool
 }
 
 func newInstallCommand(cli cli.CLI) *cobra.Command {
@@ -89,27 +91,41 @@ The command can install every component at once with the '--install-everything' 
   # Install Backyards into a non-default namespace.
   backyards install -n backyards-system`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
-			err := c.runSubcommands(cli, options)
+			err = c.runSubcommands(cli, options)
 			if err != nil {
 				return err
 			}
 
-			return c.run(cli, options)
+			err = c.run(cli, options)
+			if err != nil {
+				return err
+			}
+
+			err = c.runDemo(cli, options)
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 
-	cmd.Flags().StringVar(&options.releaseName, "release-name", "backyards", "Name of the release")
-	cmd.Flags().StringVar(&options.istioNamespace, "istio-namespace", "istio-system", "Namespace of Istio sidecar injector")
+	cmd.Flags().StringVar(&options.releaseName, "release-name", defaultReleaseName, "Name of the release")
+	cmd.Flags().StringVar(&options.istioNamespace, "istio-namespace", istio.DefaultNamespace, "Namespace of Istio sidecar injector")
 
-	cmd.Flags().BoolVar(&options.installCanary, "install-canary", false, "Install Canary feature as well")
-	cmd.Flags().BoolVar(&options.installDemoapp, "install-demoapp", false, "Install Demo application as well")
-	cmd.Flags().BoolVar(&options.installIstio, "install-istio", false, "Install Istio mesh as well")
-	cmd.Flags().BoolVarP(&options.installEverything, "install-everything", "a", false, "Install every component at once")
+	cmd.Flags().BoolVar(&options.installCanary, "install-canary", options.installCanary, "Install Canary feature as well")
+	cmd.Flags().BoolVar(&options.installDemoapp, "install-demoapp", options.installDemoapp, "Install Demo application as well")
+	cmd.Flags().BoolVar(&options.installIstio, "install-istio", options.installIstio, "Install Istio mesh as well")
+	cmd.Flags().BoolVarP(&options.installEverything, "install-everything", "a", options.installEverything, "Install every component at once")
 
-	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", false, "Dump resources to stdout instead of applying them")
+	cmd.Flags().BoolVar(&options.runDemo, "run-demo", options.runDemo, "Send load to demo application and opens up dashboard")
+
+	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", options.dumpResources, "Dump resources to stdout instead of applying them")
 
 	return cmd
 }
@@ -213,6 +229,33 @@ func (c *installCommand) validate(istioNamespace string) error {
 	}
 
 	return errors.Errorf("could not find Istio sidecar injector in '%s'", istioNamespace)
+}
+
+func (c *installCommand) runDemo(cli cli.CLI, options *installOptions) error {
+	var err error
+
+	if !options.runDemo || (!options.installEverything && !options.installDemoapp) {
+		return nil
+	}
+
+	scmdOptions := demoapp.NewLoadOptions()
+	scmdOptions.Nowait = true
+	scmd := demoapp.NewLoadCommand(cli, scmdOptions)
+	err = scmd.RunE(scmd, nil)
+	if err != nil {
+		return errors.WrapIf(err, "error during sending load to demo application")
+	}
+
+	dbOptions := NewDashboardOptions()
+	dbOptions.URI = "?namespaces=" + demoapp.GetNamespace()
+	dbOptions.Port = 0
+	dbCmd := newDashboardCommand(cli, dbOptions)
+	err = dbCmd.RunE(dbCmd, nil)
+	if err != nil {
+		return errors.WrapIf(err, "error during opening dashboard")
+	}
+
+	return nil
 }
 
 func (c *installCommand) runSubcommands(cli cli.CLI, options *installOptions) error {

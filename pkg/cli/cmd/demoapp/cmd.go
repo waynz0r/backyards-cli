@@ -19,6 +19,10 @@ import (
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 )
 
+var (
+	backyardsDemoNamespace = "backyards-demo"
+)
+
 func NewRootCmd(cli cli.CLI) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "demoapp",
@@ -28,7 +32,14 @@ func NewRootCmd(cli cli.CLI) *cobra.Command {
 	cmd.AddCommand(
 		NewInstallCommand(cli, NewInstallOptions()),
 		NewUninstallCommand(cli, NewUninstallOptions()),
+		NewLoadCommand(cli, NewLoadOptions()),
 	)
 
+	cmd.PersistentFlags().StringVar(&backyardsDemoNamespace, "demo-namespace", backyardsDemoNamespace, "Namespace for demo application")
+
 	return cmd
+}
+
+func GetNamespace() string {
+	return backyardsDemoNamespace
 }

@@ -64,11 +64,13 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
+			if options.namespace == "" {
+				options.namespace = backyardsDemoNamespace
+			}
+
 			return c.run(cli, options)
 		},
 	}
-
-	cmd.Flags().StringVar(&options.namespace, "demo-namespace", "backyards-demo", "Namespace for demo application")
 
 	cmd.Flags().BoolVarP(&options.DumpResources, "dump-resources", "d", options.DumpResources, "Dump resources to stdout instead of applying them")
 

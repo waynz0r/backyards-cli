@@ -28,39 +28,35 @@ import (
 )
 
 var (
-	IGWPort        = 80
-	IGWMatchLabels = map[string]string{
-		"app.kubernetes.io/component": "ingressgateway",
-		"app.kubernetes.io/instance":  "backyards",
-	}
 	defaultLocalPort = 50500
 )
 
 type dashboardCommand struct{}
 
 type dashboardOptions struct {
-	port int
+	URI  string
+	Port int
 	wait time.Duration
 }
 
-func newDashboardOptions() *dashboardOptions {
+func NewDashboardOptions() *dashboardOptions {
 	return &dashboardOptions{
-		port: defaultLocalPort,
+		URI:  "",
+		Port: defaultLocalPort,
 		wait: 300 * time.Second,
 	}
 }
 
-func newDashboardCommand(cli cli.CLI) *cobra.Command {
+func newDashboardCommand(cli cli.CLI, options *dashboardOptions) *cobra.Command {
 	c := dashboardCommand{}
-	options := newDashboardOptions()
 
 	cmd := &cobra.Command{
 		Use:   "dashboard [flags]",
 		Short: "Open the Backyards dashboard in a web browser",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if options.port < 0 {
-				log.Error(errors.NewWithDetails("port must be greater than or equal to zero", "port", options.port))
+			if options.Port < 0 {
+				log.Error(errors.NewWithDetails("port must be greater than or equal to zero", "port", options.Port))
 				return nil
 			}
 
@@ -73,7 +69,7 @@ func newDashboardCommand(cli cli.CLI) *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().IntVarP(&options.port, "port", "p", options.port, "The local port on which to serve requests (when set to 0, a random port will be used)")
+	cmd.PersistentFlags().IntVarP(&options.Port, "port", "p", options.Port, "The local port on which to serve requests (when set to 0, a random port will be used)")
 
 	return cmd
 }
@@ -83,7 +79,7 @@ func (c *dashboardCommand) run(cli cli.CLI, options *dashboardOptions) error {
 	signal.Notify(signals, os.Interrupt)
 	defer signal.Stop(signals)
 
-	pf, err := cli.GetPortforwardForPod(IGWMatchLabels, backyardsNamespace, options.port, IGWPort)
+	pf, err := cli.GetPortforwardForIGW(options.Port)
 	if err != nil {
 		return errors.WrapIf(err, "cloud not create port forwarder")
 	}
@@ -98,7 +94,7 @@ func (c *dashboardCommand) run(cli cli.CLI, options *dashboardOptions) error {
 		return errors.WrapIf(err, "could not run port forwarder")
 	}
 
-	url := pf.GetURL("")
+	url := pf.GetURL(options.URI)
 	log.Infof("Backyards UI is available at %s", url)
 	browser.OpenURL(url)
 

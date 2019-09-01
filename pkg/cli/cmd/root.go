@@ -112,7 +112,7 @@ func init() {
 	RootCmd.AddCommand(newVersionCommand(cli))
 	RootCmd.AddCommand(newInstallCommand(cli))
 	RootCmd.AddCommand(newUninstallCommand(cli))
-	RootCmd.AddCommand(newDashboardCommand(cli))
+	RootCmd.AddCommand(newDashboardCommand(cli, NewDashboardOptions()))
 	RootCmd.AddCommand(istio.NewRootCmd(cli))
 	RootCmd.AddCommand(canary.NewRootCmd(cli))
 	RootCmd.AddCommand(demoapp.NewRootCmd(cli))

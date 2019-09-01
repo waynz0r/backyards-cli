@@ -86,11 +86,14 @@ It can only dump the applicable resources with the '--dump-resources' option.`,
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
+			if options.namespace == "" {
+				options.namespace = backyardsDemoNamespace
+			}
+
 			return c.run(cli, options)
 		},
 	}
 
-	cmd.Flags().StringVar(&options.namespace, "demo-namespace", "backyards-demo", "Namespace for demo application")
 	cmd.Flags().StringVar(&options.istioNamespace, "istio-namespace", "istio-system", "Namespace of Istio sidecar injector")
 
 	cmd.Flags().BoolVarP(&options.DumpResources, "dump-resources", "d", options.DumpResources, "Dump resources to stdout instead of applying them")
