@@ -58,16 +58,20 @@ type installCommand struct {
 }
 
 type installOptions struct {
+	DumpResources bool
+
 	istioCRFilename string
 	releaseName     string
-	dumpResources   bool
 }
 
-func newInstallCommand(cli cli.CLI) *cobra.Command {
+func NewInstallOptions() *installOptions {
+	return &installOptions{}
+}
+
+func NewInstallCommand(cli cli.CLI, options *installOptions) *cobra.Command {
 	c := &installCommand{
 		cli: cli,
 	}
-	options := &installOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "install [flags]",
@@ -94,8 +98,9 @@ The installer automatically detects whether the CRDs are installed or not, and b
 	}
 
 	cmd.Flags().StringVar(&options.releaseName, "release-name", "istio-operator", "Name of the release")
-	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", false, "Dump resources to stdout instead of applying them")
 	cmd.Flags().StringVarP(&options.istioCRFilename, "istio-cr-file", "f", "", "Filename of a custom Istio CR yaml")
+
+	cmd.Flags().BoolVarP(&options.DumpResources, "dump-resources", "d", options.DumpResources, "Dump resources to stdout instead of applying them")
 
 	return cmd
 }
@@ -123,7 +128,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	}
 	objs = append(objs, istioCRObj)
 
-	if !options.dumpResources {
+	if !options.DumpResources {
 		err := c.applyResources(crds, objs)
 		if err != nil {
 			return errors.WrapIf(err, "could not apply resources")

@@ -73,6 +73,8 @@ func ApplyResources(client k8sclient.Client, objects object.K8sObjects, waitFunc
 				log.Error(err, "failed to set last applied annotation", "desired", desired)
 			}
 
+			desired = prepareObjectBeforeUpdate(actual, desired)
+
 			err = client.Update(context.Background(), desired)
 			if err != nil {
 				return errors.WrapIfWithDetails(err, "could not update resource", "name", objectName)
@@ -219,4 +221,13 @@ func getFormattedName(object Object) string {
 	}
 
 	return fmt.Sprintf("%s%s/%s", strings.ToLower(object.GetKind()), group, object.GetName())
+}
+
+func prepareObjectBeforeUpdate(actual, desired *unstructured.Unstructured) *unstructured.Unstructured {
+	object := desired.DeepCopy()
+	if object.GetKind() == "Service" {
+		object.Object["spec"].(map[string]interface{})["clusterIP"] = actual.Object["spec"].(map[string]interface{})["clusterIP"]
+	}
+
+	return object
 }

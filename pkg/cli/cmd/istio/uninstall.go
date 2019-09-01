@@ -33,15 +33,19 @@ type uninstallCommand struct {
 }
 
 type uninstallOptions struct {
-	releaseName   string
-	dumpResources bool
+	releaseName string
+
+	DumpResources bool
 }
 
-func newUninstallCommand(cli cli.CLI) *cobra.Command {
+func NewUninstallOptions() *uninstallOptions {
+	return &uninstallOptions{}
+}
+
+func NewUninstallCommand(cli cli.CLI, options *uninstallOptions) *cobra.Command {
 	c := &uninstallCommand{
 		cli: cli,
 	}
-	options := &uninstallOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "uninstall [flags]",
@@ -65,7 +69,8 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 	}
 
 	cmd.Flags().StringVar(&options.releaseName, "release-name", "istio-operator", "Name of the release")
-	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", false, "Dump resources to stdout instead of applying them")
+
+	cmd.Flags().BoolVarP(&options.DumpResources, "dump-resources", "d", options.DumpResources, "Dump resources to stdout instead of applying them")
 
 	return cmd
 }
@@ -84,7 +89,7 @@ func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
 
 	objects = append([]*object.K8sObject{istioCRObj}, objects...)
 
-	if !options.dumpResources {
+	if !options.DumpResources {
 		err := c.deleteResources(objects)
 		if err != nil {
 			return errors.WrapIf(err, "could not delete k8s resources")

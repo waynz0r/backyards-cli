@@ -30,6 +30,9 @@ import (
 
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/backyards"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
 )
@@ -57,6 +60,11 @@ type installOptions struct {
 	releaseName    string
 	istioNamespace string
 	dumpResources  bool
+
+	installCanary     bool
+	installDemoapp    bool
+	installIstio      bool
+	installEverything bool
 }
 
 func newInstallCommand(cli cli.CLI) *cobra.Command {
@@ -72,7 +80,9 @@ func newInstallCommand(cli cli.CLI) *cobra.Command {
 		Long: `Installs Backyards.
 
 The command automatically applies the resources.
-It can only dump the applicable resources with the '--dump-resources' option.`,
+It can only dump the applicable resources with the '--dump-resources' option.
+
+The command can install every component at once with the '--install-everything' option.`,
 		Example: `  # Default install.
   backyards install
 
@@ -82,12 +92,23 @@ It can only dump the applicable resources with the '--dump-resources' option.`,
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
+			err := c.runSubcommands(cli, options)
+			if err != nil {
+				return err
+			}
+
 			return c.run(cli, options)
 		},
 	}
 
 	cmd.Flags().StringVar(&options.releaseName, "release-name", "backyards", "Name of the release")
 	cmd.Flags().StringVar(&options.istioNamespace, "istio-namespace", "istio-system", "Namespace of Istio sidecar injector")
+
+	cmd.Flags().BoolVar(&options.installCanary, "install-canary", false, "Install Canary feature as well")
+	cmd.Flags().BoolVar(&options.installDemoapp, "install-demoapp", false, "Install Demo application as well")
+	cmd.Flags().BoolVar(&options.installIstio, "install-istio", false, "Install Istio mesh as well")
+	cmd.Flags().BoolVarP(&options.installEverything, "install-everything", "a", false, "Install every component at once")
+
 	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", false, "Dump resources to stdout instead of applying them")
 
 	return cmd
@@ -192,4 +213,47 @@ func (c *installCommand) validate(istioNamespace string) error {
 	}
 
 	return errors.Errorf("could not find Istio sidecar injector in '%s'", istioNamespace)
+}
+
+func (c *installCommand) runSubcommands(cli cli.CLI, options *installOptions) error {
+	var err error
+	var scmd *cobra.Command
+
+	if options.installIstio || options.installEverything {
+		scmdOptions := istio.NewInstallOptions()
+		if options.dumpResources {
+			scmdOptions.DumpResources = true
+		}
+		scmd = istio.NewInstallCommand(cli, scmdOptions)
+		err = scmd.RunE(scmd, nil)
+		if err != nil {
+			return errors.WrapIf(err, "error during Istio mesh install")
+		}
+	}
+
+	if options.installCanary || options.installEverything {
+		scmdOptions := canary.NewInstallOptions()
+		if options.dumpResources {
+			scmdOptions.DumpResources = true
+		}
+		scmd = canary.NewInstallCommand(cli, scmdOptions)
+		err = scmd.RunE(scmd, nil)
+		if err != nil {
+			return errors.WrapIf(err, "error during Canary feature install")
+		}
+	}
+
+	if options.installDemoapp || options.installEverything {
+		scmdOptions := demoapp.NewInstallOptions()
+		if options.dumpResources {
+			scmdOptions.DumpResources = true
+		}
+		scmd = demoapp.NewInstallCommand(cli, scmdOptions)
+		err = scmd.RunE(scmd, nil)
+		if err != nil {
+			return errors.WrapIf(err, "error during demo application install")
+		}
+	}
+
+	return nil
 }

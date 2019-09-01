@@ -26,8 +26,8 @@ func NewRootCmd(cli cli.CLI) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newInstallCommand(cli),
-		newUninstallCommand(cli),
+		NewInstallCommand(cli, NewInstallOptions()),
+		NewUninstallCommand(cli, NewUninstallOptions()),
 	)
 
 	return cmd

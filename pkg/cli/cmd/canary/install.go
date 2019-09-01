@@ -59,14 +59,17 @@ type installOptions struct {
 	istioNamespace          string
 	prometheusURL           string
 
-	dumpResources bool
+	DumpResources bool
 }
 
-func newInstallCommand(cli cli.CLI) *cobra.Command {
+func NewInstallOptions() *installOptions {
+	return &installOptions{}
+}
+
+func NewInstallCommand(cli cli.CLI, options *installOptions) *cobra.Command {
 	c := &installCommand{
 		cli: cli,
 	}
-	options := &installOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "install [flags]",
@@ -93,8 +96,9 @@ It can only dump the applicable resources with the '--dump-resources' option.
 	cmd.Flags().StringVar(&options.releaseName, "release-name", "canary-operator", "Name of the release")
 	cmd.Flags().StringVar(&options.istioNamespace, "istio-namespace", "istio-system", "Namespace of Istio sidecar injector")
 	cmd.Flags().StringVar(&options.canaryOperatorNamespace, "canary-namespace", "backyards-canary", "Namespace for the canary operator")
-	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", false, "Dump resources to stdout instead of applying them")
 	cmd.Flags().StringVar(&options.prometheusURL, "prometheus-url", "http://backyards-prometheus.backyards-system", "Prometheus URL for metrics")
+
+	cmd.Flags().BoolVarP(&options.DumpResources, "dump-resources", "d", options.DumpResources, "Dump resources to stdout instead of applying them")
 
 	return cmd
 }
@@ -112,7 +116,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	}
 	objects.Sort(helm.InstallObjectOrder())
 
-	if !options.dumpResources {
+	if !options.DumpResources {
 		client, err := cli.GetK8sClient()
 		if err != nil {
 			return err
