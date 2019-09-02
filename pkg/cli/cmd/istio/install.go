@@ -37,6 +37,7 @@ import (
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
+	"github.com/banzaicloud/backyards-cli/pkg/util"
 	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
@@ -214,27 +215,27 @@ func (c *installCommand) getIstioDeploymentsToWaitFor() []k8s.NamespacedNameWith
 
 	deploymenNames := make([]string, 0)
 
-	if istioCR.Spec.Citadel.Enabled != nil && *istioCR.Spec.Citadel.Enabled {
+	if util.PointerToBool(istioCR.Spec.Citadel.Enabled) {
 		deploymenNames = append(deploymenNames, "istio-citadel")
 	}
-	if istioCR.Spec.SidecarInjector.Enabled != nil && *istioCR.Spec.SidecarInjector.Enabled {
+	if util.PointerToBool(istioCR.Spec.SidecarInjector.Enabled) {
 		deploymenNames = append(deploymenNames, "istio-sidecar-injector")
 	}
-	if istioCR.Spec.Galley.Enabled != nil && *istioCR.Spec.Galley.Enabled {
+	if util.PointerToBool(istioCR.Spec.Galley.Enabled) {
 		deploymenNames = append(deploymenNames, "istio-galley")
 	}
-	if istioCR.Spec.Pilot.Enabled != nil && *istioCR.Spec.Pilot.Enabled {
+	if util.PointerToBool(istioCR.Spec.Pilot.Enabled) {
 		deploymenNames = append(deploymenNames, "istio-pilot")
 	}
-	if istioCR.Spec.Mixer.Enabled != nil && *istioCR.Spec.Mixer.Enabled {
+	if util.PointerToBool(istioCR.Spec.Mixer.Enabled) {
 		deploymenNames = append(deploymenNames, "istio-policy")
 		deploymenNames = append(deploymenNames, "istio-telemetry")
 	}
-	if istioCR.Spec.Gateways.Enabled != nil && *istioCR.Spec.Gateways.Enabled {
-		if istioCR.Spec.Gateways.IngressConfig.Enabled != nil && *istioCR.Spec.Gateways.IngressConfig.Enabled {
+	if util.PointerToBool(istioCR.Spec.Gateways.Enabled) {
+		if util.PointerToBool(istioCR.Spec.Gateways.IngressConfig.Enabled) {
 			deploymenNames = append(deploymenNames, "istio-ingressgateway")
 		}
-		if istioCR.Spec.Gateways.EgressConfig.Enabled != nil && *istioCR.Spec.Gateways.EgressConfig.Enabled {
+		if util.PointerToBool(istioCR.Spec.Gateways.EgressConfig.Enabled) {
 			deploymenNames = append(deploymenNames, "istio-egressgateway")
 		}
 	}

@@ -3,7 +3,7 @@ kind: Istio
 metadata:
   name: mesh
 spec:
-  version: "1.2.4"
+  version: "1.2.5"
   mtls: true
   controlPlaneSecurityEnabled: true
   sidecarInjector:
