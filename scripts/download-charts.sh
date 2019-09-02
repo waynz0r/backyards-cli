@@ -1,5 +1,5 @@
 #!/bin/bash
-CHARTS_DIR=${1:-.charts}
+CHARTS_DIR=${1:-assets/charts}
 
 BACKYARDS_CHART_VERSION="0.1.8"
 ISTIO_OPERATOR_CHART_VERSION="0.0.16"

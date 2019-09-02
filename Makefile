@@ -7,7 +7,7 @@ PACKAGE = github.com/banzaicloud/backyards-cli
 BINARY_NAME = backyards
 
 # Helm charts
-CHARTS_DIR ?= .charts
+CHARTS_DIR ?= assets/charts
 
 # Build variables
 BUILD_DIR ?= build
