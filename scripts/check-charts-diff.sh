@@ -1,6 +1,6 @@
 #!/bin/bash
 CHARTS_DIR=${1:-/tmp/.charts-diff}
-ORIG_CHARTS_DIR=${2:-.charts}
+ORIG_CHARTS_DIR=${2:-assets/charts}
 DIR=$(dirname $0)
 
 mkdir -p $CHARTS_DIR
