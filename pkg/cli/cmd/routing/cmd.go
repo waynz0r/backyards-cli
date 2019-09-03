@@ -12,30 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package graphql
+package routing
 
 import (
-	"github.com/machinebox/graphql"
+	"github.com/spf13/cobra"
+
+	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/ts"
 )
 
-type Client interface {
-	SetJWTToken(string)
-	GenerateLoad(req GenerateLoadRequest) (GenerateLoadResponse, error)
-	ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteResponse, error)
-	DisableHTTPRoute(req DisableHTTPRouteRequest) (DisableHTTPRouteResponse, error)
-}
-
-type client struct {
-	jwtToken string
-	client   *graphql.Client
-}
-
-func NewClient(url string, opt ...graphql.ClientOption) Client {
-	return &client{
-		client: graphql.NewClient(url, opt...),
+func NewRootCmd(cli cli.CLI) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "routing",
+		Aliases: []string{"r"},
+		Short:   "Manage service routing configurations",
 	}
-}
 
-func (c *client) SetJWTToken(token string) {
-	c.jwtToken = token
+	cmd.AddCommand(
+		ts.NewRootCmd(cli),
+	)
+
+	return cmd
 }

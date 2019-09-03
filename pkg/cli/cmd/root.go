@@ -29,6 +29,7 @@ import (
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing"
 )
 
 const (
@@ -116,4 +117,5 @@ func init() {
 	RootCmd.AddCommand(istio.NewRootCmd(cli))
 	RootCmd.AddCommand(canary.NewRootCmd(cli))
 	RootCmd.AddCommand(demoapp.NewRootCmd(cli))
+	RootCmd.AddCommand(routing.NewRootCmd(cli))
 }

@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/viper"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/client-go/rest"
+	v1alpha3 "knative.dev/pkg/apis/istio/v1alpha3"
 
 	k8sclient "github.com/banzaicloud/backyards-cli/pkg/k8s/client"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s/portforward"
@@ -33,6 +34,7 @@ var (
 		"app.kubernetes.io/component": "ingressgateway",
 		"app.kubernetes.io/instance":  "backyards",
 	}
+	BackyardsServiceAccountName = "backyards"
 )
 
 type CLI interface {
@@ -88,6 +90,7 @@ func (c *backyardsCLI) GetK8sClient() (k8sclient.Client, error) {
 
 	istiov1beta1.AddToScheme(k8sclient.GetScheme())
 	apiextensionsv1beta1.AddToScheme(k8sclient.GetScheme())
+	v1alpha3.AddToScheme(k8sclient.GetScheme())
 
 	client, err := k8sclient.NewClient(config, k8sclient.ClientOptions{})
 	if err != nil {
