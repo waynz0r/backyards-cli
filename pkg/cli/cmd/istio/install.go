@@ -213,35 +213,35 @@ func (c *installCommand) getIstioDeploymentsToWaitFor() []k8s.NamespacedNameWith
 		panic(err)
 	}
 
-	deploymenNames := make([]string, 0)
+	deploymentNames := make([]string, 0)
 
 	if util.PointerToBool(istioCR.Spec.Citadel.Enabled) {
-		deploymenNames = append(deploymenNames, "istio-citadel")
+		deploymentNames = append(deploymentNames, "istio-citadel")
 	}
 	if util.PointerToBool(istioCR.Spec.SidecarInjector.Enabled) {
-		deploymenNames = append(deploymenNames, "istio-sidecar-injector")
+		deploymentNames = append(deploymentNames, "istio-sidecar-injector")
 	}
 	if util.PointerToBool(istioCR.Spec.Galley.Enabled) {
-		deploymenNames = append(deploymenNames, "istio-galley")
+		deploymentNames = append(deploymentNames, "istio-galley")
 	}
 	if util.PointerToBool(istioCR.Spec.Pilot.Enabled) {
-		deploymenNames = append(deploymenNames, "istio-pilot")
+		deploymentNames = append(deploymentNames, "istio-pilot")
 	}
 	if util.PointerToBool(istioCR.Spec.Mixer.Enabled) {
-		deploymenNames = append(deploymenNames, "istio-policy")
-		deploymenNames = append(deploymenNames, "istio-telemetry")
+		deploymentNames = append(deploymentNames, "istio-policy")
+		deploymentNames = append(deploymentNames, "istio-telemetry")
 	}
 	if util.PointerToBool(istioCR.Spec.Gateways.Enabled) {
 		if util.PointerToBool(istioCR.Spec.Gateways.IngressConfig.Enabled) {
-			deploymenNames = append(deploymenNames, "istio-ingressgateway")
+			deploymentNames = append(deploymentNames, "istio-ingressgateway")
 		}
 		if util.PointerToBool(istioCR.Spec.Gateways.EgressConfig.Enabled) {
-			deploymenNames = append(deploymenNames, "istio-egressgateway")
+			deploymentNames = append(deploymentNames, "istio-egressgateway")
 		}
 	}
 
-	deployments := make([]k8s.NamespacedNameWithGVK, len(deploymenNames))
-	for i, name := range deploymenNames {
+	deployments := make([]k8s.NamespacedNameWithGVK, len(deploymentNames))
+	for i, name := range deploymentNames {
 		deployments[i] = k8s.NamespacedNameWithGVK{
 			NamespacedName: types.NamespacedName{
 				Name:      name,
