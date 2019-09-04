@@ -1,34 +1,21 @@
-## backyards demoapp install
+## backyards demoapp load
 
-Install demo application
+Send load to demo application
 
 ### Synopsis
 
-Installs demo application.
-
-The command automatically applies the resources.
-It can only dump the applicable resources with the '--dump-resources' option.
+Send load to demo application
 
 ```
-backyards demoapp install [flags]
-```
-
-### Examples
-
-```
-  # Default install.
-  backyards demoapp install
-
-  # Install Backyards into a non-default namespace.
-  backyards demoapp install -n backyards-system
+backyards demoapp load [flags]
 ```
 
 ### Options
 
 ```
-  -d, --dump-resources           Dump resources to stdout instead of applying them
-  -h, --help                     help for install
-      --istio-namespace string   Namespace of Istio sidecar injector (default "istio-system")
+      --duration int   Duration in seconds (default 30)
+  -h, --help           help for load
+      --rps int        Number of requests per second (default 10)
 ```
 
 ### Options inherited from parent commands
