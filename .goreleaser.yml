@@ -37,3 +37,9 @@ nfpms:
             - rpm
         bindir: /usr/bin
         license: Apache 2.0
+
+blob:
+    -
+        provider: s3
+        bucket: banzaicloud.com
+        folder: "downloads/backyards-cli/{{ .Version }}"
