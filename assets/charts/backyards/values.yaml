@@ -46,7 +46,7 @@ affinity: {}
 application:
   image:
     repository: banzaicloud/backyards
-    tag: 0.1.5
+    tag: 0.1.6
     pullPolicy: Always
 
   env: {}
@@ -62,7 +62,7 @@ web:
   enabled: false
   image:
     repository: banzaicloud/backyards
-    tag: web-0.1.5
+    tag: web-0.1.6
     pullPolicy: Always
 
   env: {}

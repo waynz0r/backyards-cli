@@ -78,6 +78,8 @@ spec:
 {{- end }}
           - name: GF_PATHS_DATA
             value: /data/grafana
+          - name: GF_SECURITY_ALLOW_EMBEDDING
+            value: "true"
           {{- range $key, $value := .Values.grafana.env }}
           - name: {{ $key }}
             value: {{ $value | quote }}

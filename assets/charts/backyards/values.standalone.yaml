@@ -25,17 +25,10 @@ prometheus:
   externalUrl: /prometheus
   resources:
     limits:
+      cpu: 400m
+      memory: 512Mi
+    requests:
       cpu: 200m
       memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
 grafana:
-  enabled: false
-  externalUrl: /grafana
-  replicas: 1
-  image:
-    repository: grafana/grafana
-    tag: 6.3.0
-    pullPolicy: Always
-  resources: {}
+  enabled: true
