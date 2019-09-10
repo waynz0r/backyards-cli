@@ -1,6 +1,6 @@
 #!/bin/bash
 CHARTS_DIR=${1:-assets/charts}
-ASSETS_DIR="${CHARTS_DIR}/.."
+ASSETS_DIR="${2:-assets}"
 
 BACKYARDS_CHART_VERSION="0.1.11"
 ISTIO_OPERATOR_CHART_VERSION="0.0.16"
@@ -33,4 +33,6 @@ if [ $retVal -ne 0 ]; then
     exit $retVal
 fi
 
+find "${CHARTS_DIR}/" -exec touch -t 201901010101 {} +
 find "${ASSETS_DIR}/" -exec touch -t 201901010101 {} +
+
