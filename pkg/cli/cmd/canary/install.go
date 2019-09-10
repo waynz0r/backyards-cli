@@ -83,8 +83,8 @@ It can only dump the applicable resources with the '--dump-resources' option.
 		Example: `  # Default install.
   backyards canary install
 
-  # Install Backyards into a non-default namespace.
-  backyards canary install -n backyards-system`,
+  # Install canary into a non-default namespace.
+  backyards canary install --canary-namespace backyards-canary`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
@@ -172,7 +172,7 @@ func getCanaryOperatorObjects(releaseName, canaryOperatorNamespace, prometheusUR
 		IsInstall: true,
 		IsUpgrade: false,
 		Namespace: canaryOperatorNamespace,
-	})
+	}, "canary-operator")
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not render helm manifest objects")
 	}

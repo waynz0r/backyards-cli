@@ -284,7 +284,7 @@ func getIstioOperatorObjects(releaseName string) (object.K8sObjects, error) {
 		IsInstall: true,
 		IsUpgrade: false,
 		Namespace: istioNamespace,
-	})
+	}, "istio-operator")
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not render helm manifest objects")
 	}

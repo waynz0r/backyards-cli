@@ -5,9 +5,11 @@ go 1.12
 require (
 	emperror.dev/errors v0.4.2
 	emperror.dev/handler/logrus v0.1.0
+	github.com/MakeNowJust/heredoc v0.0.0-20171113091838-e9091a26100e
 	github.com/Masterminds/sprig v2.20.0+incompatible // indirect
 	github.com/banzaicloud/istio-operator v0.0.0-20190821151858-a47cd7d9bc7a
 	github.com/banzaicloud/k8s-objectmatcher v1.0.0
+	github.com/ghodss/yaml v1.0.0
 	github.com/machinebox/graphql v0.2.2
 	github.com/matryer/is v1.2.0 // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4

@@ -44,7 +44,7 @@ func GetDefaultValues(fs http.FileSystem) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (object.K8sObjects, error) {
+func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions, chartName string) (object.K8sObjects, error) {
 	chrtConfig := &chart.Config{
 		Raw:    values,
 		Values: map[string]*chart.Value{},
@@ -118,7 +118,7 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions) (o
 		if !strings.HasSuffix(tmpl.Name, "yaml") && !strings.HasSuffix(tmpl.Name, "yml") && !strings.HasSuffix(tmpl.Name, "tpl") {
 			continue
 		}
-		t := path.Join(renderOpts.ReleaseOptions.Name, tmpl.Name)
+		t := path.Join(chartName, tmpl.Name)
 		if _, err := buf.WriteString(renderedTemplates[t]); err != nil {
 			return nil, err
 		}

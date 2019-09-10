@@ -21,6 +21,7 @@ import (
 
 	"emperror.dev/errors"
 	logrushandler "emperror.dev/handler/logrus"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -118,4 +119,5 @@ func init() {
 	RootCmd.AddCommand(canary.NewRootCmd(cli))
 	RootCmd.AddCommand(demoapp.NewRootCmd(cli))
 	RootCmd.AddCommand(routing.NewRootCmd(cli))
+	RootCmd.AddCommand(certmanager.NewRootCmd(cli))
 }

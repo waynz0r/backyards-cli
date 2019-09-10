@@ -199,7 +199,7 @@ func getBackyardsObjects(releaseName, istioNamespace string) (object.K8sObjects,
 		IsInstall: true,
 		IsUpgrade: false,
 		Namespace: backyardsNamespace,
-	})
+	}, "backyards")
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not render helm manifest objects")
 	}
