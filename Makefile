@@ -66,6 +66,14 @@ endif
 build-release: LDFLAGS += -w
 build-release: build ## Build a binary without debug information
 
+.PHONY: build-debug
+build-debug: ## Build a binary with remote debugging capabilities
+	@${MAKE} GOARGS="${GOARGS} -gcflags \"all=-N -l\"" BUILD_DIR="${BUILD_DIR}/debug" build
+
+.PHONY: debug
+debug: build-debug
+	dlv --listen=:40000 --log --headless=true --api-version=2 exec "${BUILD_DIR}/debug/${BINARY_NAME}" -- ${ARGS}
+
 .PHONY: generate-docs
 generate-docs: ## Generate documentation for Backyards CLI
 	rm -rf cmd/docs/*.md
