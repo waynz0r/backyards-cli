@@ -19,3 +19,9 @@ linters:
 linters-settings:
     golint:
         min-confidence: 0.1
+
+# temporarily until golangci lint will be recompiled for go 1.13
+issues:
+    exclude:
+        - "not declared by package utf8"
+        - "unicode/utf8/utf8.go"
