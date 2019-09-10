@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanager"
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanagercainjector"
@@ -33,6 +32,7 @@ import (
 	"github.com/spf13/cobra"
 	"istio.io/operator/pkg/object"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -144,16 +144,14 @@ func (c *installCommand) validate(namespace string) error {
 			}
 			return errors.WrapIf(err, "failed to get target namespace for cert-manager")
 		}
-		if manager, ok := targetNamespace.Labels["app.kubernetes.io/managed-by"]; ok && manager == "backyards-cli"{
+		if manager, ok := targetNamespace.Labels["app.kubernetes.io/managed-by"]; ok && manager == "backyards-cli" {
 			return nil
 		} else if ok {
-			return errors.Errorf("cert-manager already installed but the owner is unknown: %s; " +
+			return errors.Errorf("cert-manager already installed but the owner is unknown: %s; "+
 				"please remove previous cert-manager to continue", manager)
-		} else {
-			return errors.New("cert-manager already installed but the owner is unknown; " +
-				"please remove previous cert-manager to continue")
 		}
-		return errors.New("cert-manager already installed")
+		return errors.New("cert-manager already installed but the owner is unknown; " +
+			"please remove previous cert-manager to continue")
 	}
 	return nil
 }
