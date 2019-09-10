@@ -13,14 +13,15 @@ Usage:
   backyards [command]
 
 Available Commands:
-  canary      Install and manage Canary feature
-  dashboard   Open the Backyards dashboard in a web browser
-  demoapp     Install and manage demo application
-  help        Help about any command
-  install     Install Backyards
-  istio       Install and manage Istio
-  uninstall   Uninstall Backyards
-  version     Print the client and api version information
+  canary       Install and manage Canary feature
+  dashboard    Open the Backyards dashboard in a web browser
+  demoapp      Install and manage demo application
+  help         Help about any command
+  install      Install Backyards
+  istio        Install and manage Istio
+  uninstall    Uninstall Backyards
+  cert-manager Install and manage cert-manager
+  version      Print the client and api version information
 
 Flags:
       --context string      Name of the kubeconfig context to use
