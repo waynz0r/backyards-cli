@@ -67,4 +67,31 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	err = vfsgen.Generate(static.CertManagerChartSource, vfsgen.Options{
+		Filename:     "static/certmanager/chart.gogen.go",
+		PackageName:  "certmanager",
+		VariableName: "Chart",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = vfsgen.Generate(static.CertManagerCainjectorChartSource, vfsgen.Options{
+		Filename:     "static/certmanagercainjector/chart.gogen.go",
+		PackageName:  "certmanagercainjector",
+		VariableName: "Chart",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = vfsgen.Generate(static.CertManagerCRDSource, vfsgen.Options{
+		Filename:     "static/certmanagercrds/chart.gogen.go",
+		PackageName:  "certmanagercrds",
+		VariableName: "CRDs",
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
