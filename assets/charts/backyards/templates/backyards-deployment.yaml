@@ -129,6 +129,36 @@ spec:
             - name: APP_PROMETHEUS
               value: {{ (required "Prometheus URL is required!" .Values.prometheus.url) | quote }}
           {{- end }}
+          {{- if .Values.auditsink.enabled }}
+            - name: AUDITSINK_MODE
+              value: "http"
+            - name: AUDITSINK_HTTP_URL
+              value: "https://{{ include "auditsink.fullname" . }}"
+            - name: AUDITSINK_HTTP_CACERT
+              value: "/certs/auditsink/ca.crt"
+            - name: AUDITSINK_HTTP_TIMEOUT
+              value: "{{ .Values.auditsink.http.timeout }}"
+            - name: AUDITSINK_HTTP_RETRY_WAIT_MIN
+              value: "{{ .Values.auditsink.http.retryWaitMin }}"
+            - name: AUDITSINK_HTTP_RETRY_WAIT_MAX
+              value: "{{ .Values.auditsink.http.retryWaitMax }}"
+            - name: AUDITSINK_HTTP_RETRY_MAX
+              value: "{{ .Values.auditsink.http.retryMax }}"
+            - name: AUDITSINK_HTTP_PANIC_ON_FAILURE
+              value: "{{ .Values.auditsink.http.panicOnFailure }}"
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.auditsink.enabled }}
+            - name: auditsink-cert
+              mountPath: /certs/auditsink/ca.crt
+              subPath: ca.crt
+          {{- end }}
+      volumes:
+        {{- if and .Values.auditsink.enabled }}
+        - name: auditsink-cert
+          secret:
+            secretName: {{ include "auditsink.fullname" . }}-certs
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{ toYaml . | nindent 8 }}

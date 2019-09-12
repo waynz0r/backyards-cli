@@ -1,0 +1,29 @@
+{{- if and .Values.auditsink.enabled .Values.certmanager.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "auditsink.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "auditsink.name" . }}
+    app.kubernetes.io/name: {{ include "auditsink.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: auditsink
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "auditsink.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    # port name must be tcp to instruct istio to proxy in tcp node, since we want to manage our own tls
+    # https://istio.io/docs/setup/kubernetes/additional-setup/requirements/
+    - name: tcp
+      port: 443
+      targetPort: 8443
+      protocol: TCP
+{{- end }}

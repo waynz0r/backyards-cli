@@ -1,0 +1,27 @@
+{{- if and .Values.auditsink.enabled .Values.certmanager.enabled }}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ include "auditsink.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "auditsink.name" . }}
+    app.kubernetes.io/name: {{ include "auditsink.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: auditsink
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  secretName: {{ include "auditsink.fullname" . }}-certs
+  commonName: {{ include "auditsink.fullname" . }}
+  issuerRef:
+    name: {{ include "backyards.fullname" . }}-ca
+    kind: Issuer
+  dnsNames:
+    - {{ include "auditsink.fullname" . }}
+    - {{ include "auditsink.fullname" . }}:443
+    - {{ include "auditsink.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+    - {{ include "auditsink.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:443
+{{- end }}

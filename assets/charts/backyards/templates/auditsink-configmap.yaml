@@ -1,0 +1,35 @@
+{{- if and .Values.auditsink.enabled .Values.certmanager.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "auditsink.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "auditsink.name" . }}
+    app.kubernetes.io/name: {{ include "auditsink.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: auditsink
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+data:
+  fluent.conf: |-
+    <source>
+      @type http
+      port 8443
+      bind 0.0.0.0
+      body_size_limit 32m
+      keepalive_timeout 10s
+      format json
+      <transport tls>
+        ca_path /fluentd/certs/ca.crt
+        cert_path /fluentd/certs/tls.crt
+        private_key_path /fluentd/certs/tls.key
+      </transport>
+    </source>
+
+    <match **>
+      @type stdout
+    </match>
+{{- end }}

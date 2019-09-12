@@ -1,0 +1,70 @@
+{{- if and .Values.auditsink.enabled .Values.certmanager.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "auditsink.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "auditsink.name" . }}
+    app.kubernetes.io/name: {{ include "auditsink.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: auditsink
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "auditsink.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "auditsink.name" . }}
+        app.kubernetes.io/name: {{ include "auditsink.name" . }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+        app.kubernetes.io/component: auditsink
+        app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+        helm.sh/chart: {{ include "backyards.chart" . }}
+    spec:
+      securityContext:
+        runAsUser: 100
+      containers:
+        - name: fluentd
+          image: "{{ .Values.auditsink.image.repository }}:{{ .Values.auditsink.image.tag }}"
+          imagePullPolicy: {{ .Values.auditsink.image.pullPolicy | default "Always" }}
+          ports:
+            - name: http
+              containerPort: 8443
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 8443
+          livenessProbe:
+            tcpSocket:
+              port: 8443
+          {{- with .Values.auditsink.resources }}
+          resources:
+            {{ toYaml . | nindent 10 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /fluentd/etc/
+            - name: certs
+              mountPath: /fluentd/certs/
+      {{- with .Values.auditsink.tolerations }}
+      tolerations:
+        {{ toYaml . | nindent 9 }}
+      {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "auditsink.fullname" . }}
+        - name: certs
+          secret:
+            secretName: {{ include "auditsink.fullname" . }}-certs
+{{- end }}

@@ -2474,6 +2474,7 @@
       ],
       "datasource": "Prometheus",
       "decimals": null,
+      "description": "What percentage of all requests were tripped by the circuit breaker.",
       "format": "percentunit",
       "gauge": {
         "maxValue": 100,
@@ -2486,7 +2487,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 57
+        "y": 56
       },
       "id": 102,
       "interval": null,
@@ -2528,7 +2529,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "round(sum(irate(istio_requests_total{destination_service=\"$service\", response_code=~\"5.*\", response_flags=~\"(.*?)UO(.*?)\"}[5m])) by (response_code, source_app), 0.001) / round(sum(irate(istio_requests_total{destination_service=\"$service\", response_code=~\"5.*\"}[5m])) by (response_code, source_app), 0.001)",
+          "expr": "sum(irate(istio_requests_total{destination_service=\"$service\", response_code=~\"5.*\", response_flags=~\"(.*?)UO(.*?)\"}[5m])) / sum(irate(istio_requests_total{destination_service=\"$service\"}[5m]))",
           "format": "time_series",
           "refId": "A"
         }
@@ -2536,7 +2537,7 @@
       "thresholds": "95, 99, 99.5",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Circuit Breaker errors rate",
+      "title": "Circuit Breaker trips rate",
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -2554,13 +2555,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "description": "The trips caused by the circuit breaker are shown by source.",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 57
+        "y": 56
       },
       "id": 104,
       "legend": {
@@ -2589,12 +2591,94 @@
       "targets": [
         {
           "expr": "round(sum(irate(istio_requests_total{destination_service=\"$service\", response_code=~\"5.*\", response_flags=~\"(.*?)UO(.*?)\"}[5m])) by (response_code, source_app), 0.001)",
-          "legendFormat": "Circuit Breaker {{ response_code }}  errors",
+          "legendFormat": "{{ source_app }}:{{ response_code }} trips",
           "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Circuit Breaker trips by source",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
         },
         {
-          "expr": "round(sum(irate(istio_requests_total{destination_service=\"$service\", response_code=~\"5.*\"}[5m])) by (response_code, source_app), 0.001)",
-          "legendFormat": "All {{ response_code }} errors",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "description": "All errors are shown by source and response flags.\n\nExplanation to Envoy response flags (\"UO\" is for Circuit Breaking): https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log#config-access-log-format-response-flags",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 64
+      },
+      "id": 108,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "round(sum(irate(istio_requests_total{destination_service=\"$service\", response_code=~\"5.*\"}[5m])) by (response_code, source_app, response_flags), 0.001)",
+          "legendFormat": "{{ source_app }}:{{ response_code }}({{response_flags}}) errors",
           "refId": "B"
         }
       ],
@@ -2602,7 +2686,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Circuit Breaker errors",
+      "title": "Errors by source and response flags",
       "tooltip": {
         "shared": true,
         "sort": 0,

@@ -46,7 +46,7 @@ affinity: {}
 application:
   image:
     repository: banzaicloud/backyards
-    tag: 0.1.7
+    tag: 0.1.8
     pullPolicy: Always
 
   env: {}
@@ -62,7 +62,7 @@ web:
   enabled: false
   image:
     repository: banzaicloud/backyards
-    tag: web-0.1.7
+    tag: web-0.1.8
     pullPolicy: Always
 
   env: {}
@@ -116,6 +116,26 @@ grafana:
   security:
     enabled: false
 
+# requires certmanager to be present and functional for the actual namespace
+auditsink:
+  enabled: false
+  image:
+    repository: fluent/fluentd
+    tag: v1.7-1
+    pullPolicy: Always
+  resources:
+  tolerations:
+  http:
+    timeout: 1s
+    retryWaitMin: 500ms
+    retryWaitMax: 1s
+    retryMax: 3
+    panicOnFailure: false
+
 ingressgateway:
   service:
     type: ClusterIP
+
+certmanager:
+  # required if auditsink is enabled
+  enabled: false

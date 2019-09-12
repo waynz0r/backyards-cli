@@ -1,0 +1,49 @@
+{{- if and .Values.auditsink.enabled .Values.certmanager.enabled }}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: {{ include "backyards.fullname" . }}-root
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: backyards
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  selfSigned: {}
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ include "backyards.fullname" . }}-ca
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: {{ include "backyards.fullname" . }}-ca
+  commonName: {{ include "backyards.fullname" . }}-ca
+  isCA: true
+  issuerRef:
+    name: {{ include "backyards.fullname" . }}-root
+    kind: Issuer
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: {{ include "backyards.fullname" . }}-ca
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: backyards
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  ca:
+    secretName: {{ include "backyards.fullname" . }}-ca
+{{- end }}

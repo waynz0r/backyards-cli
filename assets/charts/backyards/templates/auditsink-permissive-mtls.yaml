@@ -1,0 +1,43 @@
+{{- if and .Values.auditsink.enabled .Values.certmanager.enabled }}
+# Make it possible to reach Backyards without mTLS (eg. using kube-proxy)
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: {{ include "auditsink.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "auditsink.name" . }}
+    app.kubernetes.io/name: {{ include "auditsink.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: auditsink
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  targets:
+    - name: {{ include "auditsink.fullname" . }}
+  peers:
+    - mtls:
+        mode: PERMISSIVE
+---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: {{ include "auditsink.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "auditsink.name" . }}
+    app.kubernetes.io/name: {{ include "auditsink.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: auditsink
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  host: {{ include "auditsink.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+{{- end }}
