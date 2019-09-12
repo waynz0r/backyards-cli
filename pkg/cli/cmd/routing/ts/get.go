@@ -92,7 +92,7 @@ func (c *getCommand) run(cli cli.CLI, options *getOptions) error {
 		return errors.WrapIf(err, "could not get service")
 	}
 
-	subsets := make(parsedSubsets, 0)
+	subsets := make(parsedSubsets)
 	for _, route := range vservice.Spec.HTTP {
 		if len(route.Match) > 0 {
 			continue

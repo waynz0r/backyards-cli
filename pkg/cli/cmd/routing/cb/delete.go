@@ -104,13 +104,16 @@ func (c *deleteCommand) run(cli cli.CLI, options *deleteOptions) error {
 		}
 
 		confirmed := false
-		survey.AskOne(&survey.Confirm{Message: "Do you want to DELETE the circuit breaker rules?"}, &confirmed)
+		err = survey.AskOne(&survey.Confirm{Message: "Do you want to DELETE the circuit breaker rules?"}, &confirmed)
+		if err != nil {
+			return errors.WrapIf(err, "could not ask for confirmation")
+		}
 		if !confirmed {
 			return errors.New("deletion cancelled")
 		}
 	}
 
-	client, err := getGraphQLClient(cli)
+	client, err := common.GetGraphQLClient(cli)
 	if err != nil {
 		return errors.WrapIf(err, "could not get initialized graphql client")
 	}

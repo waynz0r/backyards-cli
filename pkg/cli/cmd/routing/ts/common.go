@@ -56,7 +56,7 @@ func (p parsedSubsets) Validate() error {
 }
 
 func parseSubsets(subsets []string) (parsedSubsets, error) {
-	parsedSubsets := make(parsedSubsets, 0)
+	parsedSubsets := make(parsedSubsets)
 
 	for _, subset := range subsets {
 		parts := strings.Split(subset, "=")

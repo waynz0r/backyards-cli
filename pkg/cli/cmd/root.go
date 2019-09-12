@@ -21,13 +21,13 @@ import (
 
 	"emperror.dev/errors"
 	logrushandler "emperror.dev/handler/logrus"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing"
@@ -104,11 +104,11 @@ func Execute() {
 func init() {
 	flags := RootCmd.PersistentFlags()
 	flags.StringVarP(&backyardsNamespace, "namespace", "n", defaultNamespace, "namespace in which Backyards is installed [$BACKYARDS_NAMESPACE]")
-	viper.BindPFlag("backyards.namespace", flags.Lookup("namespace"))
+	_ = viper.BindPFlag("backyards.namespace", flags.Lookup("namespace"))
 	flags.StringVarP(&kubeconfigPath, "kubeconfig", "c", "", "path to the kubeconfig file to use for CLI requests")
-	viper.BindPFlag("kubeconfig", flags.Lookup("kubeconfig"))
+	_ = viper.BindPFlag("kubeconfig", flags.Lookup("kubeconfig"))
 	flags.StringVar(&kubeContext, "context", "", "name of the kubeconfig context to use")
-	viper.BindPFlag("kubecontext", flags.Lookup("context"))
+	_ = viper.BindPFlag("kubecontext", flags.Lookup("context"))
 	flags.BoolVarP(&verbose, "verbose", "v", false, "turn on debug logging")
 
 	flags.StringVarP(&outputFormat, "output", "o", "table", "output format (table|yaml|json)")

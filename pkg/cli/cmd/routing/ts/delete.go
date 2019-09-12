@@ -84,7 +84,7 @@ func (c *deleteCommand) run(cli cli.CLI, options *deleteOptions) error {
 		return errors.WrapIf(err, "could not get service")
 	}
 
-	client, err := getGraphQLClient(cli)
+	client, err := common.GetGraphQLClient(cli)
 	if err != nil {
 		return errors.WrapIf(err, "could not get initialized graphql client")
 	}

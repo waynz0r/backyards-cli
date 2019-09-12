@@ -18,8 +18,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/ts"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/cb"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/ts"
 )
 
 func NewRootCmd(cli cli.CLI) *cobra.Command {

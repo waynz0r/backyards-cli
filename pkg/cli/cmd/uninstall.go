@@ -19,13 +19,13 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
@@ -33,7 +33,7 @@ import (
 
 type uninstallCommand struct{}
 
-type uninstallOptions struct {
+type UninstallOptions struct {
 	releaseName    string
 	istioNamespace string
 	dumpResources  bool
@@ -47,7 +47,7 @@ type uninstallOptions struct {
 
 func newUninstallCommand(cli cli.CLI) *cobra.Command {
 	c := &uninstallCommand{}
-	options := &uninstallOptions{}
+	options := &UninstallOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "uninstall [flags]",
@@ -88,7 +88,7 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 	return cmd
 }
 
-func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
+func (c *uninstallCommand) run(cli cli.CLI, options *UninstallOptions) error {
 	objects, err := getBackyardsObjects(options.releaseName, options.istioNamespace, nil)
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
 	return nil
 }
 
-func (c *uninstallCommand) runSubcommands(cli cli.CLI, options *uninstallOptions) error {
+func (c *uninstallCommand) runSubcommands(cli cli.CLI, options *UninstallOptions) error {
 	var err error
 	var scmd *cobra.Command
 

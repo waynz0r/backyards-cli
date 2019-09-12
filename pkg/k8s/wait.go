@@ -52,11 +52,7 @@ func ExistsConditionCheck(obj *unstructured.Unstructured, k8serror error) bool {
 }
 
 func NonExistsConditionCheck(obj *unstructured.Unstructured, k8serror error) bool {
-	if k8serrors.IsNotFound(k8serror) {
-		return true
-	}
-
-	return false
+	return k8serrors.IsNotFound(k8serror)
 }
 
 func CRDEstablishedConditionCheck(obj *unstructured.Unstructured, k8serror error) bool {

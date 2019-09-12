@@ -159,7 +159,7 @@ func WaitForCRD(backoff wait.Backoff) PostResourceApplyFunc {
 
 		objectName := getFormattedName(resource)
 
-		wait.ExponentialBackoff(backoff, func() (bool, error) {
+		err := wait.ExponentialBackoff(backoff, func() (bool, error) {
 			var crd apiextensionsv1beta1.CustomResourceDefinition
 			log.Debugf("wait for %s to be available", objectName)
 			err := client.Get(context.Background(), types.NamespacedName{
@@ -184,6 +184,9 @@ func WaitForCRD(backoff wait.Backoff) PostResourceApplyFunc {
 			}
 			return false, nil
 		})
+		if err != nil {
+			return errors.WrapIf(err, "could not start exponential backoff to wait for crd")
+		}
 
 		return nil
 	}

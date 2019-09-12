@@ -120,11 +120,20 @@ func (c *backyardsCLI) GetK8sClient() (k8sclient.Client, error) {
 		return nil, errors.WrapIf(err, "could not get k8s config")
 	}
 
-	istiov1beta1.AddToScheme(k8sclient.GetScheme())
-	apiextensionsv1beta1.AddToScheme(k8sclient.GetScheme())
-	v1alpha3.AddToScheme(k8sclient.GetScheme())
+	err = istiov1beta1.AddToScheme(k8sclient.GetScheme())
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not add istio-operator/v1beta1 to scheme")
+	}
+	err = apiextensionsv1beta1.AddToScheme(k8sclient.GetScheme())
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not add apiextensions/v1beta1 to scheme")
+	}
+	err = v1alpha3.AddToScheme(k8sclient.GetScheme())
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not add istio/v1alpha3 to scheme")
+	}
 
-	client, err := k8sclient.NewClient(config, k8sclient.ClientOptions{})
+	client, err := k8sclient.NewClient(config, k8sclient.Options{})
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not get k8s client")
 	}

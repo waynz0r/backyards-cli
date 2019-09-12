@@ -23,12 +23,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanager"
-	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanagercainjector"
-	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanagercrds"
-	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/helm"
-	"github.com/banzaicloud/backyards-cli/pkg/k8s"
 	"github.com/spf13/cobra"
 	"istio.io/operator/pkg/object"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -37,21 +31,28 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanager"
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanagercainjector"
+	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/certmanagercrds"
+	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/helm"
+	"github.com/banzaicloud/backyards-cli/pkg/k8s"
 )
 
 type installCommand struct {
 	cli cli.CLI
 }
 
-type installOptions struct {
+type InstallOptions struct {
 	DumpResources bool
 }
 
-func NewInstallOptions() *installOptions {
-	return &installOptions{}
+func NewInstallOptions() *InstallOptions {
+	return &InstallOptions{}
 }
 
-func NewInstallCommand(cli cli.CLI, options *installOptions) *cobra.Command {
+func NewInstallCommand(cli cli.CLI, options *InstallOptions) *cobra.Command {
 	c := &installCommand{
 		cli: cli,
 	}
@@ -80,7 +81,7 @@ It can only dump the applicable resources with the '--dump-resources' option.`,
 	return cmd
 }
 
-func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
+func (c *installCommand) run(cli cli.CLI, options *InstallOptions) error {
 	err := c.validate(CertManagerNamespace)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cert-manager validation failed: %s", err)
@@ -176,12 +177,15 @@ func getCertManagerNamespace(namespace string) (object.K8sObjects, error) {
 func getCertManagerCRDs() (object.K8sObjects, error) {
 	crds, err := certmanagercrds.CRDs.Open("crds.yaml")
 	if err != nil {
-		errors.WrapIf(err, "failed to open certmanager crds file")
+		return nil, errors.WrapIf(err, "failed to open certmanager crds file")
 	}
 	defer crds.Close()
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(crds)
+	_, err = buf.ReadFrom(crds)
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not read certmanager crd file")
+	}
 
 	return object.ParseK8sObjectsFromYAMLManifest(buf.String())
 }

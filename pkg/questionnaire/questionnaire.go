@@ -77,9 +77,8 @@ func validateFunc(t string) survey.Validator {
 			if s, ok := ans.(string); ok {
 				_, err := time.ParseDuration(s)
 				return err
-			} else {
-				return errors.New("invalid input type")
 			}
+			return errors.New("invalid input type")
 		}
 	default:
 		return func(ans interface{}) error {

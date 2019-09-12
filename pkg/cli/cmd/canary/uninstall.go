@@ -32,18 +32,18 @@ type uninstallCommand struct {
 	cli cli.CLI
 }
 
-type uninstallOptions struct {
+type UninstallOptions struct {
 	releaseName             string
 	canaryOperatorNamespace string
 
 	DumpResources bool
 }
 
-func NewUninstallOptions() *uninstallOptions {
-	return &uninstallOptions{}
+func NewUninstallOptions() *UninstallOptions {
+	return &UninstallOptions{}
 }
 
-func NewUninstallCommand(cli cli.CLI, options *uninstallOptions) *cobra.Command {
+func NewUninstallCommand(cli cli.CLI, options *UninstallOptions) *cobra.Command {
 	c := &uninstallCommand{
 		cli: cli,
 	}
@@ -79,7 +79,7 @@ The command can uninstall every component at once with the '--uninstall-everythi
 	return cmd
 }
 
-func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
+func (c *uninstallCommand) run(cli cli.CLI, options *UninstallOptions) error {
 	objects, err := getCanaryOperatorObjects(options.releaseName, options.canaryOperatorNamespace, "")
 	if err != nil {
 		return err

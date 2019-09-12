@@ -15,8 +15,9 @@
 package certmanager
 
 import (
-	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/spf13/cobra"
+
+	"github.com/banzaicloud/backyards-cli/pkg/cli"
 )
 
 const (

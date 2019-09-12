@@ -26,7 +26,7 @@ type Client interface {
 }
 
 // Options are creation options for a Client
-type ClientOptions struct {
+type Options struct {
 	// Scheme, if provided, will be used to map go structs to GroupVersionKinds
 	Scheme *runtime.Scheme
 
@@ -44,7 +44,7 @@ type ClientOptions struct {
 // corresponding group, version, and kind for the given type.  In the
 // case of unstrctured types, the group, version, and kind will be extracted
 // from the corresponding fields on the object.
-func NewClient(config *rest.Config, options ClientOptions) (Client, error) {
+func NewClient(config *rest.Config, options Options) (Client, error) {
 	if options.Scheme == nil {
 		options.Scheme = GetScheme()
 	}
@@ -65,7 +65,7 @@ func NewClientFromKubeconfigAndContext(kubeconfigPath, kubeContext string) (Clie
 		return nil, err
 	}
 
-	client, err := NewClient(config, ClientOptions{})
+	client, err := NewClient(config, Options{})
 	if err != nil {
 		return nil, err
 	}

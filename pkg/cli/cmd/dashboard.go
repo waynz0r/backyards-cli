@@ -33,21 +33,21 @@ var (
 
 type dashboardCommand struct{}
 
-type dashboardOptions struct {
+type DashboardOptions struct {
 	URI  string
 	Port int
 	wait time.Duration
 }
 
-func NewDashboardOptions() *dashboardOptions {
-	return &dashboardOptions{
+func NewDashboardOptions() *DashboardOptions {
+	return &DashboardOptions{
 		URI:  "",
 		Port: defaultLocalPort,
 		wait: 300 * time.Second,
 	}
 }
 
-func newDashboardCommand(cli cli.CLI, options *dashboardOptions) *cobra.Command {
+func newDashboardCommand(cli cli.CLI, options *DashboardOptions) *cobra.Command {
 	c := dashboardCommand{}
 
 	cmd := &cobra.Command{
@@ -74,7 +74,7 @@ func newDashboardCommand(cli cli.CLI, options *dashboardOptions) *cobra.Command 
 	return cmd
 }
 
-func (c *dashboardCommand) run(cli cli.CLI, options *dashboardOptions) error {
+func (c *dashboardCommand) run(cli cli.CLI, options *DashboardOptions) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 	defer signal.Stop(signals)
@@ -96,7 +96,10 @@ func (c *dashboardCommand) run(cli cli.CLI, options *dashboardOptions) error {
 
 	url := pf.GetURL(options.URI)
 	log.Infof("Backyards UI is available at %s", url)
-	browser.OpenURL(url)
+	err = browser.OpenURL(url)
+	if err != nil {
+		return err
+	}
 
 	pf.WaitForStop()
 

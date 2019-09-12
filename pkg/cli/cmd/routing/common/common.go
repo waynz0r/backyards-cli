@@ -20,13 +20,20 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
-	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/spf13/viper"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis/istio/v1alpha3"
+
+	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/graphql"
+	"github.com/banzaicloud/backyards-cli/pkg/k8s"
 )
 
-const dns1123LabelFmt string = "[a-z0-9]([-a-z0-9]*[a-z0-9])?"
+const (
+	backyardsServiceAccountName        = "backyards"
+	dns1123LabelFmt             string = "[a-z0-9]([-a-z0-9]*[a-z0-9])?"
+)
 
 var dns1123LabelRegexp = regexp.MustCompile("^" + dns1123LabelFmt + "$")
 
@@ -94,4 +101,34 @@ func GetVirtualserviceByName(cli cli.CLI, serviceName types.NamespacedName) (*v1
 	}
 
 	return &vservice, nil
+}
+
+func GetGraphQLClient(cli cli.CLI) (graphql.Client, error) {
+	k8sclient, err := cli.GetK8sClient()
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := k8s.GetTokenForServiceAccountName(k8sclient, types.NamespacedName{
+		Name:      backyardsServiceAccountName,
+		Namespace: viper.GetString("backyards.namespace"),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	pf, err := cli.GetPortforwardForIGW(0)
+	if err != nil {
+		return nil, err
+	}
+
+	err = pf.Run()
+	if err != nil {
+		return nil, err
+	}
+
+	client := graphql.NewClient(pf.GetURL("/api/graphql"))
+	client.SetJWTToken(token)
+
+	return client, nil
 }

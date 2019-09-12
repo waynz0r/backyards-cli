@@ -21,6 +21,7 @@ import (
 	"path"
 	"strings"
 
+	"emperror.dev/errors"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"k8s.io/helm/pkg/renderutil"
@@ -39,7 +40,10 @@ func GetDefaultValues(fs http.FileSystem) ([]byte, error) {
 	defer file.Close()
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
+	_, err = buf.ReadFrom(file)
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not read default values")
+	}
 
 	return buf.Bytes(), nil
 }
@@ -144,12 +148,15 @@ func getFiles(fs http.FileSystem) ([]*chartutil.BufferedFile, error) {
 func readIntoBytes(fs http.FileSystem, filename string) ([]byte, error) {
 	file, err := fs.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, errors.WrapIf(err, "could not open file")
 	}
 	defer file.Close()
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
+	_, err = buf.ReadFrom(file)
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not read file")
+	}
 
 	return buf.Bytes(), nil
 }

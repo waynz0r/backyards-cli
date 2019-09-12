@@ -23,22 +23,23 @@ import (
 	"runtime"
 )
 
-// Chart that will be rendered by `backyards install`
+// BackyardsChartSource chart that will be rendered by `backyards install`
 var BackyardsChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/backyards"))
 
-// Chart that will be rendered by `backyards istio install`
+// IstioOperatorChartSource chart that will be rendered by `backyards istio install`
 var IstioOperatorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/istio-operator"))
 
-// Chart that will be rendered by `backyards canary install`
+// CanaryOperatorChartSource chart that will be rendered by `backyards canary install`
 var CanaryOperatorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/canary-operator"))
 
-// Chart that will be rendered by `backyards demoapp install`
+// BackyardsDemoChartSource chart that will be rendered by `backyards demoapp install`
 var BackyardsDemoChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/backyards-demo"))
 
-// Istio assets
+// IstioAssetsSource istio assets
 var IstioAssetsSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/istio"))
 
 // CertManager charts and CRDs
+
 var CertManagerChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/cert-manager"))
 var CertManagerCainjectorChartSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/charts/cert-manager/charts/cainjector"))
 var CertManagerCRDSource http.FileSystem = http.Dir(path.Join(getRepoRoot(), "assets/cert-manager"))
