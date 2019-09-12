@@ -21,7 +21,9 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	"github.com/spf13/cobra"
+	"go.uber.org/multierr"
 	"istio.io/operator/pkg/object"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -38,18 +40,16 @@ import (
 )
 
 const (
-	istioNotFoundErrorTemplate = `Unable to install Backyards: %s
-
-An existing Istio installation is required. You can install it with:
-
-backyards istio install
-`
-	defaultReleaseName = "backyards"
+	requirementNotFoundErrorTemplate = "Unable to install Backyards: %s\n"
+	defaultReleaseName               = "backyards"
 )
 
 var (
 	sidecarPodLabels = map[string]string{
 		"app": "istio-sidecar-injector",
+	}
+	certManagerPodLabels = map[string]string{
+		"app": "cert-manager",
 	}
 )
 
@@ -62,11 +62,14 @@ type installOptions struct {
 	istioNamespace string
 	dumpResources  bool
 
-	installCanary     bool
-	installDemoapp    bool
-	installIstio      bool
-	installEverything bool
-	runDemo           bool
+	installCanary      bool
+	installDemoapp     bool
+	installIstio       bool
+	installCertManager bool
+	disableCertManager bool
+	disableAuditSink   bool
+	installEverything  bool
+	runDemo            bool
 }
 
 func newInstallCommand(cli cli.CLI) *cobra.Command {
@@ -121,9 +124,12 @@ The command can install every component at once with the '--install-everything' 
 	cmd.Flags().BoolVar(&options.installCanary, "install-canary", options.installCanary, "Install Canary feature as well")
 	cmd.Flags().BoolVar(&options.installDemoapp, "install-demoapp", options.installDemoapp, "Install Demo application as well")
 	cmd.Flags().BoolVar(&options.installIstio, "install-istio", options.installIstio, "Install Istio mesh as well")
+	cmd.Flags().BoolVar(&options.installCertManager, "install-cert-manager", options.installIstio, "Install cert-manager as well")
 	cmd.Flags().BoolVarP(&options.installEverything, "install-everything", "a", options.installEverything, "Install every component at once")
 
 	cmd.Flags().BoolVar(&options.runDemo, "run-demo", options.runDemo, "Send load to demo application and opens up dashboard")
+	cmd.Flags().BoolVar(&options.disableCertManager, "disable-cert-manager", options.disableCertManager, "Disable dependency on cert-manager and on it's resources")
+	cmd.Flags().BoolVar(&options.disableAuditSink, "disable-auditsink", options.disableAuditSink, "Disable deploying the auditsink service and sending audit logs over http")
 
 	cmd.Flags().BoolVarP(&options.dumpResources, "dump-resources", "d", options.dumpResources, "Dump resources to stdout instead of applying them")
 
@@ -131,13 +137,22 @@ The command can install every component at once with the '--install-everything' 
 }
 
 func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
-	err := c.validate(options.istioNamespace)
+	err := c.validate(options)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, istioNotFoundErrorTemplate, err)
+		errors := multierr.Errors(err)
+		var errorItems string
+		for _, e := range errors {
+			errorItems += "\n - " + e.Error()
+		}
+		fmt.Fprintf(os.Stderr, requirementNotFoundErrorTemplate, errorItems)
 		return nil
 	}
 
-	objects, err := getBackyardsObjects(options.releaseName, options.istioNamespace)
+	objects, err := getBackyardsObjects(options.releaseName, options.istioNamespace, func (values *Values) {
+		values.CertManager.Enabled = !options.disableCertManager
+		values.AuditSink.Enabled = !options.disableAuditSink
+	})
+
 	if err != nil {
 		return err
 	}
@@ -174,7 +189,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	return nil
 }
 
-func getBackyardsObjects(releaseName, istioNamespace string) (object.K8sObjects, error) {
+func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc func (values *Values)) (object.K8sObjects, error) {
 	var values Values
 
 	valuesYAML, err := helm.GetDefaultValues(backyards.Chart)
@@ -188,6 +203,10 @@ func getBackyardsObjects(releaseName, istioNamespace string) (object.K8sObjects,
 	}
 
 	values.SetDefaults(releaseName, istioNamespace)
+
+	if valueOverrideFunc != nil {
+		valueOverrideFunc(&values)
+	}
 
 	rawValues, err := yaml.Marshal(values)
 	if err != nil {
@@ -207,28 +226,97 @@ func getBackyardsObjects(releaseName, istioNamespace string) (object.K8sObjects,
 	return objects, nil
 }
 
-func (c *installCommand) validate(istioNamespace string) error {
+func (c *installCommand) validate(options *installOptions) error {
+	var istioHealthy bool
+	var combinedErr error
+
+	istioExists, istioHealthy, err := c.istioRunning(options.istioNamespace)
+	if err != nil {
+		return errors.WrapIf(err, "failed to check Istio state")
+	}
+
+	if !istioExists {
+		combinedErr = errors.Combine(combinedErr,
+			errors.Errorf("could not find Istio sidecar injector in '%s' namespace, " +
+				"use the --install-istio flag", options.istioNamespace))
+	}
+	if istioExists && !istioHealthy {
+		combinedErr = errors.Combine(combinedErr,
+			errors.Errorf("Istio sidecar injector not healthy yet in '%s' namespace", options.istioNamespace))
+	}
+
+	if !options.disableCertManager {
+		certManagerExists, certManagerHealthy, err := c.certManagerRunning()
+		if err != nil {
+			return errors.WrapIf(err, "failed to check cert-manager state")
+		}
+
+		if !certManagerExists {
+			combinedErr = errors.Combine(combinedErr,
+				errors.Errorf("could not find cert-manager controller in '%s' namespace, " +
+					"use the --install-cert-manager flag or disable it using --disable-cert-manager " +
+					"which disables dependent services as well", certmanager.CertManagerNamespace))
+		}
+		if certManagerExists && !certManagerHealthy {
+			combinedErr = errors.Combine(combinedErr,
+				errors.Errorf("cert-manager controller not healthy yet in '%s' namespace", certmanager.CertManagerNamespace))
+		}
+	}
+
+	if options.disableCertManager && !options.disableAuditSink {
+		combinedErr = errors.Combine(combinedErr, errors.Errorf("The HTTP AuditSink feature cannot work without cert-manager"))
+	}
+
+	return combinedErr
+}
+
+func (c *installCommand) istioRunning(istioNamespace string) (exists bool, healthy bool, err error) {
 	cl, err := c.cli.GetK8sClient()
 	if err != nil {
-		return errors.WrapIf(err, "could not get k8s client")
+		err = errors.WrapIf(err, "could not get k8s client")
+		return
 	}
 	var pods v1.PodList
 	err = cl.List(context.Background(), &pods, client.InNamespace(istioNamespace), client.MatchingLabels(sidecarPodLabels))
 	if err != nil {
-		return errors.WrapIf(err, "could not list pods")
+		err = errors.WrapIf(err, "could not list istio pods")
+		return
 	}
-
+	if len(pods.Items) > 0 {
+		exists = true
+	}
 	for _, pod := range pods.Items {
 		if pod.Status.Phase == v1.PodRunning {
-			return nil
+			healthy = true
+			break
 		}
 	}
+	return
+}
 
-	if len(pods.Items) > 0 {
-		errors.Errorf("Istio sidecar injector not healthy yet in '%s'", istioNamespace)
+func (c *installCommand) certManagerRunning() (exists bool, healthy bool, err error) {
+	cl, err := c.cli.GetK8sClient()
+	if err != nil {
+		err = errors.WrapIf(err, "could not get k8s client")
+		return
 	}
-
-	return errors.Errorf("could not find Istio sidecar injector in '%s'", istioNamespace)
+	var certManagerPods v1.PodList
+	err = cl.List(context.Background(), &certManagerPods, client.InNamespace(certmanager.CertManagerNamespace),
+		client.MatchingLabels(certManagerPodLabels))
+	if err != nil {
+		err = errors.WrapIf(err, "failed to list cert-manager controller pods")
+		return
+	}
+	if len(certManagerPods.Items) > 0 {
+		exists = true
+	}
+	for _, pod := range certManagerPods.Items {
+		if pod.Status.Phase == v1.PodRunning {
+			healthy = true
+			break
+		}
+	}
+	return
 }
 
 func (c *installCommand) runDemo(cli cli.CLI, options *installOptions) error {
@@ -271,6 +359,18 @@ func (c *installCommand) runSubcommands(cli cli.CLI, options *installOptions) er
 		err = scmd.RunE(scmd, nil)
 		if err != nil {
 			return errors.WrapIf(err, "error during Istio mesh install")
+		}
+	}
+
+	if !options.disableCertManager && (options.installCertManager || options.installEverything) {
+		scmdOptions := certmanager.NewInstallOptions()
+		if options.dumpResources {
+			scmdOptions.DumpResources = true
+		}
+		scmd = certmanager.NewInstallCommand(cli, scmdOptions)
+		err = scmd.RunE(scmd, nil)
+		if err != nil {
+			return errors.WrapIf(err, "error during cert-manager install")
 		}
 	}
 

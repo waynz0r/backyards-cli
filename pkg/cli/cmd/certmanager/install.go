@@ -81,13 +81,13 @@ It can only dump the applicable resources with the '--dump-resources' option.`,
 }
 
 func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
-	err := c.validate(certManagerNamespace)
+	err := c.validate(CertManagerNamespace)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cert-manager validation failed: %s", err)
 		return nil
 	}
 
-	objects, err := getCertManagerObjects(certManagerNamespace)
+	objects, err := getCertManagerObjects(CertManagerNamespace)
 	if err != nil {
 		return err
 	}

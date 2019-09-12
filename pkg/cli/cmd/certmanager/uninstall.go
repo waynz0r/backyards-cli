@@ -71,7 +71,7 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 }
 
 func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
-	objects, err := getCertManagerObjects(certManagerNamespace)
+	objects, err := getCertManagerObjects(CertManagerNamespace)
 	if err != nil {
 		return err
 	}

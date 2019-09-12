@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	certManagerNamespace = "cert-manager"
+	CertManagerNamespace   = "cert-manager"
 	certManagerReleaseName = "cert-manager"
 )
 
@@ -39,5 +39,5 @@ func NewRootCmd(cli cli.CLI) *cobra.Command {
 }
 
 func GetNamespace() string {
-	return certManagerNamespace
+	return CertManagerNamespace
 }

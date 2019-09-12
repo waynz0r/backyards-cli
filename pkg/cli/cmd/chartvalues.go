@@ -113,6 +113,24 @@ type Values struct {
 			Type string `json:"type"`
 		} `json:"service"`
 	} `json:"ingressgateway"`
+
+	AuditSink struct {
+		Enabled bool `json:"enabled"`
+		Image helm.Image `json:"image"`
+		Resources corev1.ResourceRequirements `json:"resources"`
+		Tolerations []corev1.Toleration `json:"tolerations"`
+		HTTP struct {
+			Timeout string `json:"timeout"`
+			RetryWaitMin string `json:"retryWaitMin"`
+			RetryWaitMax string `json:"retryWaitMax"`
+			RetryMax int `json:"retryMax"`
+			PanicOnFailure bool `json:"panicOnFailure"`
+		} `json:"http"`
+	} `json:"auditsink"`
+
+	CertManager struct {
+		Enabled bool `json:"enabled"`
+	} `json:"certmanager"`
 }
 
 func (values *Values) SetDefaults(releaseName, istioNamespace string) {
