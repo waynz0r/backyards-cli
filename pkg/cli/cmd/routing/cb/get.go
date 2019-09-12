@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ts
+package cb
 
 import (
 	"emperror.dev/errors"
@@ -21,6 +21,7 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
+	clierrors "github.com/banzaicloud/backyards-cli/internal/errors"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 )
@@ -43,7 +44,7 @@ func newGetCommand(cli cli.CLI) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:           "get [[--service=]namespace/servicename]",
-		Short:         "Get traffic shifting rules for a service",
+		Short:         "Get circuit breaker rules for a service",
 		Args:          cobra.MaximumNArgs(1),
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -72,38 +73,67 @@ func newGetCommand(cli cli.CLI) *cobra.Command {
 	return cmd
 }
 
+func getCircuitBreakerRulesByServiceName(cli cli.CLI, serviceName types.NamespacedName) (*CircuitBreakerSettings, error) {
+	var err error
+
+	_, err = common.GetServiceByName(cli, serviceName)
+	if err != nil {
+		if k8serrors.IsNotFound(errors.Cause(err)) {
+			return nil, err
+		}
+		return nil, errors.WrapIf(err, "could not get service")
+	}
+
+	drule, err := common.GetDestinationRuleByName(cli, serviceName)
+	notfound := false
+	if err != nil {
+		if k8serrors.IsNotFound(errors.Cause(err)) {
+			notfound = true
+		} else {
+			return nil, errors.WrapIf(err, "could not get service")
+		}
+	} else if drule.Spec.TrafficPolicy == nil || drule.Spec.TrafficPolicy.ConnectionPool == nil {
+		notfound = true
+	}
+
+	if notfound {
+		return nil, clierrors.NotFoundError{}
+	}
+
+	tp := drule.Spec.TrafficPolicy
+
+	return &CircuitBreakerSettings{
+		MaxConnections: tp.ConnectionPool.TCP.MaxConnections,
+		ConnectTimeout: tp.ConnectionPool.TCP.ConnectTimeout,
+
+		HTTP1MaxPendingRequests:  tp.ConnectionPool.HTTP.HTTP1MaxPendingRequests,
+		HTTP2MaxRequests:         tp.ConnectionPool.HTTP.HTTP2MaxRequests,
+		MaxRequestsPerConnection: tp.ConnectionPool.HTTP.MaxRequestsPerConnection,
+		MaxRetries:               tp.ConnectionPool.HTTP.MaxRetries,
+
+		ConsecutiveErrors:  tp.OutlierDetection.ConsecutiveErrors,
+		Interval:           tp.OutlierDetection.Interval,
+		BaseEjectionTime:   tp.OutlierDetection.BaseEjectionTime,
+		MaxEjectionPercent: tp.OutlierDetection.MaxEjectionPercent,
+	}, nil
+}
+
 func (c *getCommand) run(cli cli.CLI, options *getOptions) error {
 	var err error
 
-	_, err = common.GetServiceByName(cli, options.serviceName)
+	data, err := getCircuitBreakerRulesByServiceName(cli, options.serviceName)
 	if err != nil {
-		if k8serrors.IsNotFound(errors.Cause(err)) {
-			return err
-		}
-		return errors.WrapIf(err, "could not get service")
-	}
-
-	vservice, err := common.GetVirtualserviceByName(cli, options.serviceName)
-	if err != nil {
-		if k8serrors.IsNotFound(errors.Cause(err)) {
-			log.Infof("no traffic shifting rules set for %s", options.serviceName)
+		if clierrors.IsNotFound(err) {
+			log.Infof("no circuit breaker rules set for %s", options.serviceName)
 			return nil
 		}
-		return errors.WrapIf(err, "could not get service")
+		return err
 	}
 
-	subsets := make(parsedSubsets, 0)
-	for _, route := range vservice.Spec.HTTP {
-		if len(route.Match) > 0 {
-			continue
-		}
-
-		for _, r := range route.Route {
-			subsets[r.Destination.Subset] = r.Weight
-		}
+	err = Output(cli, data)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	log.Infof("traffic shifting for %s is currently set to %s", options.serviceName, subsets)
 
 	return nil
 }

@@ -12,42 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ts
+package cb
 
 import (
 	"emperror.dev/errors"
+	"github.com/AlecAivazis/survey/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
+	clierrors "github.com/banzaicloud/backyards-cli/internal/errors"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 	"github.com/banzaicloud/backyards-cli/pkg/graphql"
 )
 
-type setCommand struct{}
+type deleteCommand struct{}
 
-type setOptions struct {
+type deleteOptions struct {
 	serviceID string
-	subsets   []string
 
-	serviceName   types.NamespacedName
-	parsedSubsets parsedSubsets
+	serviceName types.NamespacedName
 }
 
-func newSetOptions() *setOptions {
-	return &setOptions{}
+func newDeleteOptions() *deleteOptions {
+	return &deleteOptions{}
 }
 
-func newSetCommand(cli cli.CLI) *cobra.Command {
-	c := &setCommand{}
-	options := newSetOptions()
+func newDeleteCommand(cli cli.CLI) *cobra.Command {
+	c := &deleteCommand{}
+	options := newDeleteOptions()
 
 	cmd := &cobra.Command{
-		Use:           "set [[--service=]namespace/servicename] [[--version=]subset=weight] ...",
-		Short:         "Set traffic shifting rules for a service",
-		Args:          cobra.ArbitraryArgs,
+		Use:           "delete [[--service=]namespace/servicename]",
+		Short:         "Delete circuit breaker rules of a service",
+		Args:          cobra.MaximumNArgs(1),
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
@@ -56,24 +56,11 @@ func newSetCommand(cli cli.CLI) *cobra.Command {
 				options.serviceID = args[0]
 			}
 
-			if len(args) > 1 {
-				options.subsets = append(options.subsets, args[1:]...)
-			}
-
 			if options.serviceID == "" {
 				return errors.New("service must be specified")
 			}
 
-			if len(options.subsets) < 1 {
-				return errors.New("at least 1 subset must be specified")
-			}
-
 			options.serviceName, err = common.ParseServiceID(options.serviceID)
-			if err != nil {
-				return err
-			}
-
-			options.parsedSubsets, err = parseSubsets(options.subsets)
 			if err != nil {
 				return err
 			}
@@ -84,12 +71,11 @@ func newSetCommand(cli cli.CLI) *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.StringVar(&options.serviceID, "service", "", "Service name")
-	flags.StringArrayVar(&options.subsets, "subset", []string{}, "Subsets with weights (sum of the weight must add up to 100)")
 
 	return cmd
 }
 
-func (c *setCommand) run(cli cli.CLI, options *setOptions) error {
+func (c *deleteCommand) run(cli cli.CLI, options *deleteOptions) error {
 	var err error
 
 	service, err := common.GetServiceByName(cli, options.serviceName)
@@ -100,37 +86,50 @@ func (c *setCommand) run(cli cli.CLI, options *setOptions) error {
 		return errors.WrapIf(err, "could not get service")
 	}
 
+	if cli.InteractiveTerminal() {
+		data, err := getCircuitBreakerRulesByServiceName(cli, options.serviceName)
+		if err != nil {
+			if clierrors.IsNotFound(err) {
+				log.Infof("no circuit breaker rules set for %s", options.serviceName)
+				return nil
+			}
+			return err
+		}
+
+		log.Info("current settings")
+
+		err = Output(cli, data)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		confirmed := false
+		survey.AskOne(&survey.Confirm{Message: "Do you want to DELETE the circuit breaker rules?"}, &confirmed)
+		if !confirmed {
+			return errors.New("deletion cancelled")
+		}
+	}
+
 	client, err := getGraphQLClient(cli)
 	if err != nil {
 		return errors.WrapIf(err, "could not get initialized graphql client")
 	}
 
-	req := graphql.ApplyHTTPRouteRequest{
+	req := graphql.DisableGlobalTrafficPolicyRequest{
 		Name:      service.Name,
 		Namespace: service.Namespace,
-		Route:     make([]graphql.HTTPRouteDestination, 0),
+		Rules:     []string{"ConnectionPool", "OutlierDetection"},
 	}
-
-	for subset, weight := range options.parsedSubsets {
-		req.Route = append(req.Route, graphql.HTTPRouteDestination{
-			Destination: graphql.Destination{
-				Host:   service.Name,
-				Subset: subset,
-			},
-			Weight: weight,
-		})
-	}
-
-	r, err := client.ApplyHTTPRoute(req)
+	r, err := client.DisableGlobalTrafficPolicy(req)
 	if err != nil {
 		return err
 	}
 
 	if !r {
-		return errors.New("unknown error: cannot set traffic shifting")
+		return errors.New("unknown error: cannot delete circuit breaker rules")
 	}
 
-	log.Infof("traffic shifting for %s set to %s successfully", options.serviceName, options.parsedSubsets)
+	log.Infof("circuit breaker rules set to %s successfully deleted", options.serviceName)
 
 	return nil
 }

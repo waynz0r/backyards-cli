@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 	"github.com/banzaicloud/backyards-cli/pkg/graphql"
 )
 
@@ -57,7 +58,7 @@ func newDeleteCommand(cli cli.CLI) *cobra.Command {
 				return errors.New("service must be specified")
 			}
 
-			options.serviceName, err = parseServiceID(options.serviceID)
+			options.serviceName, err = common.ParseServiceID(options.serviceID)
 			if err != nil {
 				return err
 			}
@@ -75,7 +76,7 @@ func newDeleteCommand(cli cli.CLI) *cobra.Command {
 func (c *deleteCommand) run(cli cli.CLI, options *deleteOptions) error {
 	var err error
 
-	service, err := getService(cli, options.serviceName)
+	service, err := common.GetServiceByName(cli, options.serviceName)
 	if err != nil {
 		if k8serrors.IsNotFound(errors.Cause(err)) {
 			return err

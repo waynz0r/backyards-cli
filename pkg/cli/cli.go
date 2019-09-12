@@ -16,8 +16,10 @@ package cli
 
 import (
 	"io"
+	"os"
 
 	"emperror.dev/errors"
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/viper"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/client-go/rest"
@@ -25,6 +27,7 @@ import (
 
 	k8sclient "github.com/banzaicloud/backyards-cli/pkg/k8s/client"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s/portforward"
+	"github.com/banzaicloud/backyards-cli/pkg/output"
 	istiov1beta1 "github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
@@ -39,7 +42,12 @@ var (
 
 type CLI interface {
 	Out() io.Writer
+	OutputFormat() string
+	Color() bool
+	Interactive() bool
+	InteractiveTerminal() bool
 	GetK8sClient() (k8sclient.Client, error)
+
 	GetK8sConfig() (*rest.Config, error)
 	GetPortforwardForPod(podLabels map[string]string, namespace string, localPort, remotePort int) (*portforward.Portforward, error)
 	GetPortforwardForIGW(localPort int) (*portforward.Portforward, error)
@@ -53,6 +61,30 @@ func NewCli(out io.Writer) CLI {
 	return &backyardsCLI{
 		out: out,
 	}
+}
+
+func (c *backyardsCLI) InteractiveTerminal() bool {
+	return c.Interactive() && c.OutputFormat() == output.OutputFormatTable
+}
+
+func (c *backyardsCLI) Interactive() bool {
+	if isatty.IsTerminal(os.Stdout.Fd()) && isatty.IsTerminal(os.Stdin.Fd()) {
+		return !viper.GetBool("formatting.no-interactive")
+	}
+
+	return viper.GetBool("formatting.force-interactive")
+}
+
+func (c *backyardsCLI) Color() bool {
+	if isatty.IsTerminal(os.Stdout.Fd()) {
+		return !viper.GetBool("formatting.no-color")
+	}
+
+	return viper.GetBool("formatting.force-color")
+}
+
+func (c *backyardsCLI) OutputFormat() string {
+	return viper.GetString("output.format")
 }
 
 func (c *backyardsCLI) Out() io.Writer {

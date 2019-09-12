@@ -42,6 +42,7 @@ var (
 	kubeconfigPath     string
 	kubeContext        string
 	verbose            bool
+	outputFormat       string
 
 	namespaceRegex = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
 )
@@ -101,13 +102,23 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVarP(&backyardsNamespace, "namespace", "n", defaultNamespace, "Namespace in which Backyards is installed [$BACKYARDS_NAMESPACE]")
-	viper.BindPFlag("backyards.namespace", RootCmd.PersistentFlags().Lookup("namespace"))
-	RootCmd.PersistentFlags().StringVarP(&kubeconfigPath, "kubeconfig", "c", "", "Path to the kubeconfig file to use for CLI requests")
-	viper.BindPFlag("kubeconfig", RootCmd.PersistentFlags().Lookup("kubeconfig"))
-	RootCmd.PersistentFlags().StringVar(&kubeContext, "context", "", "Name of the kubeconfig context to use")
-	viper.BindPFlag("kubecontext", RootCmd.PersistentFlags().Lookup("context"))
-	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Turn on debug logging")
+	flags := RootCmd.PersistentFlags()
+	flags.StringVarP(&backyardsNamespace, "namespace", "n", defaultNamespace, "namespace in which Backyards is installed [$BACKYARDS_NAMESPACE]")
+	viper.BindPFlag("backyards.namespace", flags.Lookup("namespace"))
+	flags.StringVarP(&kubeconfigPath, "kubeconfig", "c", "", "path to the kubeconfig file to use for CLI requests")
+	viper.BindPFlag("kubeconfig", flags.Lookup("kubeconfig"))
+	flags.StringVar(&kubeContext, "context", "", "name of the kubeconfig context to use")
+	viper.BindPFlag("kubecontext", flags.Lookup("context"))
+	flags.BoolVarP(&verbose, "verbose", "v", false, "turn on debug logging")
+
+	flags.StringVarP(&outputFormat, "output", "o", "table", "output format (table|yaml|json)")
+	_ = viper.BindPFlag("output.format", flags.Lookup("output"))
+
+	_ = viper.BindPFlag("formatting.force-color", flags.Lookup("color"))
+	flags.Bool("no-interactive", false, "never ask questions interactively")
+	_ = viper.BindPFlag("formatting.no-interactive", flags.Lookup("no-interactive"))
+	flags.Bool("interactive", false, "ask questions interactively even if stdin or stdout is non-tty")
+	_ = viper.BindPFlag("formatting.force-interactive", flags.Lookup("interactive"))
 
 	cli := cli.NewCli(os.Stdout)
 

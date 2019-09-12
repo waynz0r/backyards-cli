@@ -12,27 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package routing
+package errors
 
-import (
-	"github.com/spf13/cobra"
+type NotFoundError struct {
+	message string
+}
 
-	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/ts"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/cb"
-)
-
-func NewRootCmd(cli cli.CLI) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "routing",
-		Aliases: []string{"r"},
-		Short:   "Manage service routing configurations",
+func (e NotFoundError) Error() string {
+	if e.message != "" {
+		return e.message
 	}
 
-	cmd.AddCommand(
-		ts.NewRootCmd(cli),
-		cb.NewRootCmd(cli),
-	)
+	return "not found"
+}
 
-	return cmd
+func IsNotFound(err error) bool {
+	if _, ok := err.(NotFoundError); ok {
+		return ok
+	}
+
+	return false
 }
