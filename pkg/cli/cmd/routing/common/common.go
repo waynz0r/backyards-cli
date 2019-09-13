@@ -92,12 +92,12 @@ func GetVirtualserviceByName(cli cli.CLI, serviceName types.NamespacedName) (*v1
 
 	k8sclient, err := cli.GetK8sClient()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	err = k8sclient.Get(context.Background(), serviceName, &vservice)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.WrapIf(err, "could not get virtual service")
 	}
 
 	return &vservice, nil
