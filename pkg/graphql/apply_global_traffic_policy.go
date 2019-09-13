@@ -17,7 +17,8 @@ package graphql
 import (
 	"context"
 
-	"github.com/machinebox/graphql"
+	"github.com/MakeNowJust/heredoc"
+
 	"knative.dev/pkg/apis/istio/v1alpha3"
 )
 
@@ -31,7 +32,7 @@ type ApplyGlobalTrafficPolicyRequest struct {
 type ApplyGlobalTrafficPolicyResponse bool
 
 func (c *client) ApplyGlobalTrafficPolicy(req ApplyGlobalTrafficPolicyRequest) (ApplyGlobalTrafficPolicyResponse, error) {
-	request := `
+	request := heredoc.Doc(`
 	  mutation applyGlobalTrafficPolicy(
 		$input: ApplyGlobalTrafficPolicyInput!
 	  ) {
@@ -39,17 +40,10 @@ func (c *client) ApplyGlobalTrafficPolicy(req ApplyGlobalTrafficPolicyRequest) (
 		  input: $input
 		)
 	  }
-`
+`)
 
-	r := graphql.NewRequest(request)
-
+	r := c.NewRequest(request)
 	r.Var("input", req)
-
-	// set header fields
-	if c.jwtToken != "" {
-		r.Header.Set("Authorization", "Bearer "+c.jwtToken)
-	}
-	r.Header.Set("Cache-Control", "no-cache")
 
 	// run it and capture the response
 	var respData map[string]ApplyGlobalTrafficPolicyResponse

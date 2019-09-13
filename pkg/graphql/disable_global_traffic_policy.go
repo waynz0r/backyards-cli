@@ -17,7 +17,7 @@ package graphql
 import (
 	"context"
 
-	"github.com/machinebox/graphql"
+	"github.com/MakeNowJust/heredoc"
 )
 
 type DisableGlobalTrafficPolicyRequest struct {
@@ -29,7 +29,7 @@ type DisableGlobalTrafficPolicyRequest struct {
 type DisableGlobalTrafficPolicyResponse bool
 
 func (c *client) DisableGlobalTrafficPolicy(req DisableGlobalTrafficPolicyRequest) (DisableGlobalTrafficPolicyResponse, error) {
-	request := `
+	request := heredoc.Doc(`
 	  mutation disableGlobalTrafficPolicyRequest(
 		$input: DisableGlobalTrafficPolicyInput!
 	  ) {
@@ -37,17 +37,10 @@ func (c *client) DisableGlobalTrafficPolicy(req DisableGlobalTrafficPolicyReques
 		  input: $input
 		)
 	  }
-`
+`)
 
-	r := graphql.NewRequest(request)
-
+	r := c.NewRequest(request)
 	r.Var("input", req)
-
-	// set header fields
-	if c.jwtToken != "" {
-		r.Header.Set("Authorization", "Bearer "+c.jwtToken)
-	}
-	r.Header.Set("Cache-Control", "no-cache")
 
 	// run it and capture the response
 	var respData map[string]DisableGlobalTrafficPolicyResponse

@@ -17,7 +17,7 @@ package graphql
 import (
 	"context"
 
-	"github.com/machinebox/graphql"
+	"github.com/MakeNowJust/heredoc"
 )
 
 type HTTPRouteDestination struct {
@@ -45,7 +45,7 @@ type ApplyHTTPRouteRequest struct {
 type ApplyHTTPRouteResponse bool
 
 func (c *client) ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteResponse, error) {
-	request := `
+	request := heredoc.Doc(`
 	  mutation applyHTTPRoute(
 		$input: ApplyHTTPRouteInput!
 	  ) {
@@ -53,17 +53,10 @@ func (c *client) ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteRespon
 		  input: $input
 		)
 	  }
-`
+`)
 
-	r := graphql.NewRequest(request)
-
+	r := c.NewRequest(request)
 	r.Var("input", req)
-
-	// set header fields
-	if c.jwtToken != "" {
-		r.Header.Set("Authorization", "Bearer "+c.jwtToken)
-	}
-	r.Header.Set("Cache-Control", "no-cache")
 
 	// run it and capture the response
 	var respData map[string]ApplyHTTPRouteResponse
