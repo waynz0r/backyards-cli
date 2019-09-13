@@ -100,7 +100,7 @@ func (c *deleteCommand) run(cli cli.CLI, options *deleteOptions) error {
 
 		err = Output(cli, data)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		confirmed := false

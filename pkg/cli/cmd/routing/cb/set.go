@@ -231,7 +231,7 @@ func (c *setCommand) output(cli cli.CLI, options *setOptions) error {
 
 	err = Output(cli, data)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
