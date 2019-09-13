@@ -23,6 +23,8 @@ type Client interface {
 	GenerateLoad(req GenerateLoadRequest) (GenerateLoadResponse, error)
 	ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteResponse, error)
 	DisableHTTPRoute(req DisableHTTPRouteRequest) (DisableHTTPRouteResponse, error)
+	ApplyGlobalTrafficPolicy(req ApplyGlobalTrafficPolicyRequest) (ApplyGlobalTrafficPolicyResponse, error)
+	DisableGlobalTrafficPolicy(req DisableGlobalTrafficPolicyRequest) (DisableGlobalTrafficPolicyResponse, error)
 }
 
 type client struct {
@@ -38,4 +40,16 @@ func NewClient(url string, opt ...graphql.ClientOption) Client {
 
 func (c *client) SetJWTToken(token string) {
 	c.jwtToken = token
+}
+
+func (c *client) NewRequest(q string) *graphql.Request {
+	r := graphql.NewRequest(q)
+
+	// set header fields
+	if c.jwtToken != "" {
+		r.Header.Set("Authorization", "Bearer "+c.jwtToken)
+	}
+	r.Header.Set("Cache-Control", "no-cache")
+
+	return r
 }

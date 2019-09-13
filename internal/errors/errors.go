@@ -12,33 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package certmanager
+package errors
 
-import (
-	"github.com/spf13/cobra"
-
-	"github.com/banzaicloud/backyards-cli/pkg/cli"
-)
-
-const (
-	CertManagerNamespace   = "cert-manager"
-	certManagerReleaseName = "cert-manager"
-)
-
-func NewRootCmd(cli cli.CLI) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "cert-manager",
-		Short: "Install and manage cert-manager",
-	}
-
-	cmd.AddCommand(
-		NewInstallCommand(cli, NewInstallOptions()),
-		NewUninstallCommand(cli, NewUninstallOptions()),
-	)
-
-	return cmd
+type NotFoundError struct {
+	message string
 }
 
-func GetNamespace() string {
-	return CertManagerNamespace
+func (e NotFoundError) Error() string {
+	if e.message != "" {
+		return e.message
+	}
+
+	return "not found"
+}
+
+func IsNotFound(err error) bool {
+	if _, ok := err.(NotFoundError); ok {
+		return ok
+	}
+
+	return false
 }

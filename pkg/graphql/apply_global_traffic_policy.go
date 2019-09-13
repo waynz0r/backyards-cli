@@ -18,38 +18,25 @@ import (
 	"context"
 
 	"github.com/MakeNowJust/heredoc"
+
+	"knative.dev/pkg/apis/istio/v1alpha3"
 )
 
-type HTTPRouteDestination struct {
-	Destination Destination `json:"destination"`
-	Weight      int         `json:"weight"`
+type ApplyGlobalTrafficPolicyRequest struct {
+	Name             string                           `json:"name"`
+	Namespace        string                           `json:"namespace"`
+	ConnectionPool   *v1alpha3.ConnectionPoolSettings `json:"connectionPoolSettings,omitempty"`
+	OutlierDetection *v1alpha3.OutlierDetection       `json:"outlierDetection,omitempty"`
 }
 
-type Destination struct {
-	Host   string        `json:"host"`
-	Subset string        `json:"subset,omitempty"`
-	Port   *PortSelector `json:"port,omitempty"`
-}
+type ApplyGlobalTrafficPolicyResponse bool
 
-type PortSelector struct {
-	Number uint32 `json:"number,omitempty"`
-	Name   string `json:"name,omitempty"`
-}
-
-type ApplyHTTPRouteRequest struct {
-	Name      string                 `json:"name"`
-	Namespace string                 `json:"namespace"`
-	Route     []HTTPRouteDestination `json:"route,omitempty"`
-}
-
-type ApplyHTTPRouteResponse bool
-
-func (c *client) ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteResponse, error) {
+func (c *client) ApplyGlobalTrafficPolicy(req ApplyGlobalTrafficPolicyRequest) (ApplyGlobalTrafficPolicyResponse, error) {
 	request := heredoc.Doc(`
-	  mutation applyHTTPRoute(
-		$input: ApplyHTTPRouteInput!
+	  mutation applyGlobalTrafficPolicy(
+		$input: ApplyGlobalTrafficPolicyInput!
 	  ) {
-		applyHTTPRoute(
+		applyGlobalTrafficPolicy(
 		  input: $input
 		)
 	  }
@@ -59,10 +46,10 @@ func (c *client) ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteRespon
 	r.Var("input", req)
 
 	// run it and capture the response
-	var respData map[string]ApplyHTTPRouteResponse
+	var respData map[string]ApplyGlobalTrafficPolicyResponse
 	if err := c.client.Run(context.Background(), r, &respData); err != nil {
 		return false, err
 	}
 
-	return respData["applyHTTPRoute"], nil
+	return respData["applyGlobalTrafficPolicy"], nil
 }

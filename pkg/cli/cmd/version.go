@@ -102,7 +102,10 @@ func getAPIVersion(cli cli.CLI, versionEndpoint string) string {
 
 	var bi buildinfo.BuildInfo
 	decoder := json.NewDecoder(resp.Body)
-	decoder.Decode(&bi)
+	err = decoder.Decode(&bi)
+	if err != nil {
+		return defaultVersionString
+	}
 
 	return bi.Version
 }

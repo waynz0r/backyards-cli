@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package certmanager
+package cb
 
 import (
 	"github.com/spf13/cobra"
@@ -20,25 +20,18 @@ import (
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 )
 
-const (
-	CertManagerNamespace   = "cert-manager"
-	certManagerReleaseName = "cert-manager"
-)
-
 func NewRootCmd(cli cli.CLI) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "cert-manager",
-		Short: "Install and manage cert-manager",
+		Use:     "circuit-breaker",
+		Aliases: []string{"cb"},
+		Short:   "Manage circuit-breaker configurations",
 	}
 
 	cmd.AddCommand(
-		NewInstallCommand(cli, NewInstallOptions()),
-		NewUninstallCommand(cli, NewUninstallOptions()),
+		newGetCommand(cli),
+		newSetCommand(cli),
+		newDeleteCommand(cli),
 	)
 
 	return cmd
-}
-
-func GetNamespace() string {
-	return CertManagerNamespace
 }

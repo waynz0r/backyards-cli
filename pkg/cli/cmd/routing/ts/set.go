@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 	"github.com/banzaicloud/backyards-cli/pkg/graphql"
 )
 
@@ -67,7 +68,7 @@ func newSetCommand(cli cli.CLI) *cobra.Command {
 				return errors.New("at least 1 subset must be specified")
 			}
 
-			options.serviceName, err = parseServiceID(options.serviceID)
+			options.serviceName, err = common.ParseServiceID(options.serviceID)
 			if err != nil {
 				return err
 			}
@@ -91,7 +92,7 @@ func newSetCommand(cli cli.CLI) *cobra.Command {
 func (c *setCommand) run(cli cli.CLI, options *setOptions) error {
 	var err error
 
-	service, err := getService(cli, options.serviceName)
+	service, err := common.GetServiceByName(cli, options.serviceName)
 	if err != nil {
 		if k8serrors.IsNotFound(errors.Cause(err)) {
 			return err
@@ -99,7 +100,7 @@ func (c *setCommand) run(cli cli.CLI, options *setOptions) error {
 		return errors.WrapIf(err, "could not get service")
 	}
 
-	client, err := getGraphQLClient(cli)
+	client, err := common.GetGraphQLClient(cli)
 	if err != nil {
 		return errors.WrapIf(err, "could not get initialized graphql client")
 	}

@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	"github.com/spf13/cobra"
 	"go.uber.org/multierr"
 	"istio.io/operator/pkg/object"
@@ -33,6 +32,7 @@ import (
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/backyards"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
@@ -57,7 +57,7 @@ type installCommand struct {
 	cli cli.CLI
 }
 
-type installOptions struct {
+type InstallOptions struct {
 	releaseName    string
 	istioNamespace string
 	dumpResources  bool
@@ -76,7 +76,7 @@ func newInstallCommand(cli cli.CLI) *cobra.Command {
 	c := &installCommand{
 		cli: cli,
 	}
-	options := &installOptions{}
+	options := &InstallOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "install [flags]",
@@ -136,7 +136,7 @@ The command can install every component at once with the '--install-everything' 
 	return cmd
 }
 
-func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
+func (c *installCommand) run(cli cli.CLI, options *InstallOptions) error {
 	err := c.validate(options)
 	if err != nil {
 		errors := multierr.Errors(err)
@@ -148,7 +148,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 		return nil
 	}
 
-	objects, err := getBackyardsObjects(options.releaseName, options.istioNamespace, func (values *Values) {
+	objects, err := getBackyardsObjects(options.releaseName, options.istioNamespace, func(values *Values) {
 		values.CertManager.Enabled = !options.disableCertManager
 		values.AuditSink.Enabled = !options.disableAuditSink
 	})
@@ -189,7 +189,7 @@ func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
 	return nil
 }
 
-func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc func (values *Values)) (object.K8sObjects, error) {
+func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc func(values *Values)) (object.K8sObjects, error) {
 	var values Values
 
 	valuesYAML, err := helm.GetDefaultValues(backyards.Chart)
@@ -226,7 +226,7 @@ func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc f
 	return objects, nil
 }
 
-func (c *installCommand) validate(options *installOptions) error {
+func (c *installCommand) validate(options *InstallOptions) error {
 	var istioHealthy bool
 	var combinedErr error
 
@@ -237,7 +237,7 @@ func (c *installCommand) validate(options *installOptions) error {
 
 	if !istioExists {
 		combinedErr = errors.Combine(combinedErr,
-			errors.Errorf("could not find Istio sidecar injector in '%s' namespace, " +
+			errors.Errorf("could not find Istio sidecar injector in '%s' namespace, "+
 				"use the --install-istio flag", options.istioNamespace))
 	}
 	if istioExists && !istioHealthy {
@@ -253,8 +253,8 @@ func (c *installCommand) validate(options *installOptions) error {
 
 		if !certManagerExists {
 			combinedErr = errors.Combine(combinedErr,
-				errors.Errorf("could not find cert-manager controller in '%s' namespace, " +
-					"use the --install-cert-manager flag or disable it using --disable-cert-manager " +
+				errors.Errorf("could not find cert-manager controller in '%s' namespace, "+
+					"use the --install-cert-manager flag or disable it using --disable-cert-manager "+
 					"which disables dependent services as well", certmanager.CertManagerNamespace))
 		}
 		if certManagerExists && !certManagerHealthy {
@@ -319,7 +319,7 @@ func (c *installCommand) certManagerRunning() (exists bool, healthy bool, err er
 	return
 }
 
-func (c *installCommand) runDemo(cli cli.CLI, options *installOptions) error {
+func (c *installCommand) runDemo(cli cli.CLI, options *InstallOptions) error {
 	var err error
 
 	if !options.runDemo || (!options.installEverything && !options.installDemoapp) {
@@ -346,7 +346,7 @@ func (c *installCommand) runDemo(cli cli.CLI, options *installOptions) error {
 	return nil
 }
 
-func (c *installCommand) runSubcommands(cli cli.CLI, options *installOptions) error {
+func (c *installCommand) runSubcommands(cli cli.CLI, options *InstallOptions) error {
 	var err error
 	var scmd *cobra.Command
 

@@ -17,7 +17,7 @@ package graphql
 import (
 	"context"
 
-	"github.com/machinebox/graphql"
+	"github.com/MakeNowJust/heredoc"
 )
 
 type DisableHTTPRouteRequest struct {
@@ -29,7 +29,7 @@ type DisableHTTPRouteRequest struct {
 type DisableHTTPRouteResponse bool
 
 func (c *client) DisableHTTPRoute(req DisableHTTPRouteRequest) (DisableHTTPRouteResponse, error) {
-	request := `
+	request := heredoc.Doc(`
 	  mutation disableHTTPRoute(
 		$input: DisableHTTPRouteInput!
 	  ) {
@@ -37,17 +37,10 @@ func (c *client) DisableHTTPRoute(req DisableHTTPRouteRequest) (DisableHTTPRoute
 		  input: $input
 		)
 	  }
-`
+`)
 
-	r := graphql.NewRequest(request)
-
+	r := c.NewRequest(request)
 	r.Var("input", req)
-
-	// set header fields
-	if c.jwtToken != "" {
-		r.Header.Set("Authorization", "Bearer "+c.jwtToken)
-	}
-	r.Header.Set("Cache-Control", "no-cache")
 
 	// run it and capture the response
 	var respData map[string]DisableHTTPRouteResponse

@@ -21,13 +21,13 @@ import (
 
 	"emperror.dev/errors"
 	logrushandler "emperror.dev/handler/logrus"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing"
@@ -42,6 +42,7 @@ var (
 	kubeconfigPath     string
 	kubeContext        string
 	verbose            bool
+	outputFormat       string
 
 	namespaceRegex = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
 )
@@ -101,13 +102,23 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVarP(&backyardsNamespace, "namespace", "n", defaultNamespace, "Namespace in which Backyards is installed [$BACKYARDS_NAMESPACE]")
-	viper.BindPFlag("backyards.namespace", RootCmd.PersistentFlags().Lookup("namespace"))
-	RootCmd.PersistentFlags().StringVarP(&kubeconfigPath, "kubeconfig", "c", "", "Path to the kubeconfig file to use for CLI requests")
-	viper.BindPFlag("kubeconfig", RootCmd.PersistentFlags().Lookup("kubeconfig"))
-	RootCmd.PersistentFlags().StringVar(&kubeContext, "context", "", "Name of the kubeconfig context to use")
-	viper.BindPFlag("kubecontext", RootCmd.PersistentFlags().Lookup("context"))
-	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Turn on debug logging")
+	flags := RootCmd.PersistentFlags()
+	flags.StringVarP(&backyardsNamespace, "namespace", "n", defaultNamespace, "namespace in which Backyards is installed [$BACKYARDS_NAMESPACE]")
+	_ = viper.BindPFlag("backyards.namespace", flags.Lookup("namespace"))
+	flags.StringVarP(&kubeconfigPath, "kubeconfig", "c", "", "path to the kubeconfig file to use for CLI requests")
+	_ = viper.BindPFlag("kubeconfig", flags.Lookup("kubeconfig"))
+	flags.StringVar(&kubeContext, "context", "", "name of the kubeconfig context to use")
+	_ = viper.BindPFlag("kubecontext", flags.Lookup("context"))
+	flags.BoolVarP(&verbose, "verbose", "v", false, "turn on debug logging")
+
+	flags.StringVarP(&outputFormat, "output", "o", "table", "output format (table|yaml|json)")
+	_ = viper.BindPFlag("output.format", flags.Lookup("output"))
+
+	_ = viper.BindPFlag("formatting.force-color", flags.Lookup("color"))
+	flags.Bool("non-interactive", false, "never ask questions interactively")
+	_ = viper.BindPFlag("formatting.non-interactive", flags.Lookup("non-interactive"))
+	flags.Bool("interactive", false, "ask questions interactively even if stdin or stdout is non-tty")
+	_ = viper.BindPFlag("formatting.force-interactive", flags.Lookup("interactive"))
 
 	cli := cli.NewCli(os.Stdout)
 

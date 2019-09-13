@@ -19,27 +19,28 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/helm"
-	"github.com/banzaicloud/backyards-cli/pkg/k8s"
 	"github.com/spf13/cobra"
 	"istio.io/operator/pkg/object"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/helm"
+	"github.com/banzaicloud/backyards-cli/pkg/k8s"
 )
 
 type uninstallCommand struct {
 	cli cli.CLI
 }
 
-type uninstallOptions struct {
+type UninstallOptions struct {
 	DumpResources bool
 }
 
-func NewUninstallOptions() *uninstallOptions {
-	return &uninstallOptions{}
+func NewUninstallOptions() *UninstallOptions {
+	return &UninstallOptions{}
 }
 
-func NewUninstallCommand(cli cli.CLI, options *uninstallOptions) *cobra.Command {
+func NewUninstallCommand(cli cli.CLI, options *UninstallOptions) *cobra.Command {
 	c := &uninstallCommand{
 		cli: cli,
 	}
@@ -70,7 +71,7 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 	return cmd
 }
 
-func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
+func (c *uninstallCommand) run(cli cli.CLI, options *UninstallOptions) error {
 	objects, err := getCertManagerObjects(CertManagerNamespace)
 	if err != nil {
 		return err

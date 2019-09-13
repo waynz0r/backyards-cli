@@ -18,9 +18,10 @@ import (
 	"context"
 
 	"emperror.dev/errors"
-	k8sclient "github.com/banzaicloud/backyards-cli/pkg/k8s/client"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	k8sclient "github.com/banzaicloud/backyards-cli/pkg/k8s/client"
 )
 
 // GetTokenForServiceAccountName retrieves an auth token of service account from the related secret

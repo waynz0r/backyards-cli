@@ -53,18 +53,18 @@ type installCommand struct {
 	cli cli.CLI
 }
 
-type installOptions struct {
+type InstallOptions struct {
 	namespace      string
 	istioNamespace string
 
 	DumpResources bool
 }
 
-func NewInstallOptions() *installOptions {
-	return &installOptions{}
+func NewInstallOptions() *InstallOptions {
+	return &InstallOptions{}
 }
 
-func NewInstallCommand(cli cli.CLI, options *installOptions) *cobra.Command {
+func NewInstallCommand(cli cli.CLI, options *InstallOptions) *cobra.Command {
 	c := &installCommand{
 		cli: cli,
 	}
@@ -101,7 +101,7 @@ It can only dump the applicable resources with the '--dump-resources' option.`,
 	return cmd
 }
 
-func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
+func (c *installCommand) run(cli cli.CLI, options *InstallOptions) error {
 	err := c.validate(options.istioNamespace)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, istioNotFoundErrorTemplate, err)
@@ -196,7 +196,7 @@ func (c *installCommand) validate(istioNamespace string) error {
 	}
 
 	if len(pods.Items) > 0 {
-		errors.Errorf("Istio sidecar injector not healthy yet in '%s'", istioNamespace)
+		return errors.Errorf("Istio sidecar injector not healthy yet in '%s'", istioNamespace)
 	}
 
 	return errors.Errorf("could not find Istio sidecar injector in '%s'", istioNamespace)

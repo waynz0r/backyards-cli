@@ -21,6 +21,7 @@ import (
 	"path"
 	"strings"
 
+	"emperror.dev/errors"
 	"k8s.io/helm/pkg/chartutil"
 	"k8s.io/helm/pkg/proto/hapi/chart"
 	"k8s.io/helm/pkg/renderutil"
@@ -39,7 +40,10 @@ func GetDefaultValues(fs http.FileSystem) ([]byte, error) {
 	defer file.Close()
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
+	_, err = buf.ReadFrom(file)
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not read default values")
+	}
 
 	return buf.Bytes(), nil
 }
@@ -50,44 +54,9 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions, ch
 		Values: map[string]*chart.Value{},
 	}
 
-	files := []*chartutil.BufferedFile{
-		{
-			Name: chartutil.ChartfileName,
-		},
-	}
-
-	// if the Helm chart templates use some resource files (like dashboards), those should be put under resources
-
-	for _, dirName := range []string{"resources", chartutil.TemplatesDir} {
-		dir, err := fs.Open(dirName)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return nil, err
-			}
-		} else {
-			dirFiles, err := dir.Readdir(-1)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, file := range dirFiles {
-				filename := file.Name()
-				if strings.HasSuffix(filename, "yaml") || strings.HasSuffix(filename, "yml") || strings.HasSuffix(filename, "tpl") || strings.HasSuffix(filename, "json") {
-					files = append(files, &chartutil.BufferedFile{
-						Name: dirName + "/" + filename,
-					})
-				}
-			}
-		}
-	}
-
-	for _, f := range files {
-		data, err := readIntoBytes(fs, f.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		f.Data = data
+	files, err := getFiles(fs)
+	if err != nil {
+		return nil, err
 	}
 
 	// Create chart and render templates
@@ -133,15 +102,61 @@ func Render(fs http.FileSystem, values string, releaseOptions ReleaseOptions, ch
 	return objects, nil
 }
 
+func getFiles(fs http.FileSystem) ([]*chartutil.BufferedFile, error) {
+	files := []*chartutil.BufferedFile{
+		{
+			Name: chartutil.ChartfileName,
+		},
+	}
+
+	// if the Helm chart templates use some resource files (like dashboards), those should be put under resources
+	for _, dirName := range []string{"resources", chartutil.TemplatesDir} {
+		dir, err := fs.Open(dirName)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return nil, err
+			}
+		} else {
+			dirFiles, err := dir.Readdir(-1)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, file := range dirFiles {
+				filename := file.Name()
+				if strings.HasSuffix(filename, "yaml") || strings.HasSuffix(filename, "yml") || strings.HasSuffix(filename, "tpl") || strings.HasSuffix(filename, "json") {
+					files = append(files, &chartutil.BufferedFile{
+						Name: dirName + "/" + filename,
+					})
+				}
+			}
+		}
+	}
+
+	for _, f := range files {
+		data, err := readIntoBytes(fs, f.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		f.Data = data
+	}
+
+	return files, nil
+}
+
 func readIntoBytes(fs http.FileSystem, filename string) ([]byte, error) {
 	file, err := fs.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, errors.WrapIf(err, "could not open file")
 	}
 	defer file.Close()
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
+	_, err = buf.ReadFrom(file)
+	if err != nil {
+		return nil, errors.WrapIf(err, "could not read file")
+	}
 
 	return buf.Bytes(), nil
 }

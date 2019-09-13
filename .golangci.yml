@@ -2,26 +2,17 @@ linters:
     enable-all: true
     disable:
         - maligned
-
-        # TODO: fix these
-        - dupl
         - gochecknoglobals
         - lll
-        - deadcode
-        - golint
         - gochecknoinits
-        - gofmt
-        - gocritic
-        - megacheck
-        - errcheck
-        - goimports
 
 linters-settings:
+    funlen:
+        lines: 100
+
     golint:
         min-confidence: 0.1
-
-# temporarily until golangci lint will be recompiled for go 1.13
-issues:
-    exclude:
-        - "not declared by package utf8"
-        - "unicode/utf8/utf8.go"
+    goimports:
+        # put imports beginning with prefix after 3rd-party packages;
+        # it's a comma-separated list of prefixes
+        local-prefixes: github.com/banzaicloud

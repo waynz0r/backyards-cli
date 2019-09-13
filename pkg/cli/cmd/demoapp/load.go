@@ -29,7 +29,7 @@ type loadCommand struct {
 	cli cli.CLI
 }
 
-type loadOptions struct {
+type LoadOptions struct {
 	Nowait    bool
 	Frequency int
 	Duration  int
@@ -37,8 +37,8 @@ type loadOptions struct {
 	namespace string
 }
 
-func NewLoadOptions() *loadOptions {
-	return &loadOptions{
+func NewLoadOptions() *LoadOptions {
+	return &LoadOptions{
 		Nowait: false,
 
 		Frequency: 10,
@@ -46,7 +46,7 @@ func NewLoadOptions() *loadOptions {
 	}
 }
 
-func NewLoadCommand(cli cli.CLI, options *loadOptions) *cobra.Command {
+func NewLoadCommand(cli cli.CLI, options *LoadOptions) *cobra.Command {
 	c := &loadCommand{
 		cli: cli,
 	}
@@ -74,7 +74,7 @@ func NewLoadCommand(cli cli.CLI, options *loadOptions) *cobra.Command {
 	return cmd
 }
 
-func (c *loadCommand) run(cli cli.CLI, options *loadOptions) error {
+func (c *loadCommand) run(cli cli.CLI, options *LoadOptions) error {
 	var err error
 	var response graphql.GenerateLoadResponse
 

@@ -20,36 +20,20 @@ import (
 	"github.com/MakeNowJust/heredoc"
 )
 
-type HTTPRouteDestination struct {
-	Destination Destination `json:"destination"`
-	Weight      int         `json:"weight"`
+type DisableGlobalTrafficPolicyRequest struct {
+	Name      string   `json:"name"`
+	Namespace string   `json:"namespace"`
+	Rules     []string `json:"rules"`
 }
 
-type Destination struct {
-	Host   string        `json:"host"`
-	Subset string        `json:"subset,omitempty"`
-	Port   *PortSelector `json:"port,omitempty"`
-}
+type DisableGlobalTrafficPolicyResponse bool
 
-type PortSelector struct {
-	Number uint32 `json:"number,omitempty"`
-	Name   string `json:"name,omitempty"`
-}
-
-type ApplyHTTPRouteRequest struct {
-	Name      string                 `json:"name"`
-	Namespace string                 `json:"namespace"`
-	Route     []HTTPRouteDestination `json:"route,omitempty"`
-}
-
-type ApplyHTTPRouteResponse bool
-
-func (c *client) ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteResponse, error) {
+func (c *client) DisableGlobalTrafficPolicy(req DisableGlobalTrafficPolicyRequest) (DisableGlobalTrafficPolicyResponse, error) {
 	request := heredoc.Doc(`
-	  mutation applyHTTPRoute(
-		$input: ApplyHTTPRouteInput!
+	  mutation disableGlobalTrafficPolicyRequest(
+		$input: DisableGlobalTrafficPolicyInput!
 	  ) {
-		applyHTTPRoute(
+		disableGlobalTrafficPolicy(
 		  input: $input
 		)
 	  }
@@ -59,10 +43,10 @@ func (c *client) ApplyHTTPRoute(req ApplyHTTPRouteRequest) (ApplyHTTPRouteRespon
 	r.Var("input", req)
 
 	// run it and capture the response
-	var respData map[string]ApplyHTTPRouteResponse
+	var respData map[string]DisableGlobalTrafficPolicyResponse
 	if err := c.client.Run(context.Background(), r, &respData); err != nil {
 		return false, err
 	}
 
-	return respData["applyHTTPRoute"], nil
+	return respData["disableGlobalTrafficPolicy"], nil
 }

@@ -17,7 +17,7 @@ package graphql
 import (
 	"context"
 
-	"github.com/machinebox/graphql"
+	"github.com/MakeNowJust/heredoc"
 )
 
 type GenerateLoadRequest struct {
@@ -34,13 +34,13 @@ type GenerateLoadRequest struct {
 type GenerateLoadResponse map[string]int
 
 func (c *client) GenerateLoad(req GenerateLoadRequest) (GenerateLoadResponse, error) {
-	request := `
+	request := heredoc.Doc(`
 	mutation load($namespace: String!, $service: String!, $port: Int!, $endpoint: String!, $method: String!, $body: String, $headers: Map, $frequency: Int!, $duration: Int!) {
 		generateLoad(namespace: $namespace, service: $service, port: $port, endpoint: $endpoint, method: $method, body: $body, headers: $headers, frequency: $frequency, duration: $duration)
 	}
-`
+`)
 
-	r := graphql.NewRequest(request)
+	r := c.NewRequest(request)
 
 	r.Var("namespace", req.Namespace)
 	r.Var("service", req.Service)
@@ -50,9 +50,6 @@ func (c *client) GenerateLoad(req GenerateLoadRequest) (GenerateLoadResponse, er
 	r.Var("frequency", req.Frequency)
 	r.Var("duration", req.Duration)
 	r.Var("headers", req.Headers)
-
-	// set header fields
-	r.Header.Set("Cache-Control", "no-cache")
 
 	// run it and capture the response
 	var respData map[string]GenerateLoadResponse

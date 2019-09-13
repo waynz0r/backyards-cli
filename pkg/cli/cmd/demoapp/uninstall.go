@@ -32,17 +32,17 @@ type uninstallCommand struct {
 	cli cli.CLI
 }
 
-type uninstallOptions struct {
+type UninstallOptions struct {
 	namespace string
 
 	DumpResources bool
 }
 
-func NewUninstallOptions() *uninstallOptions {
-	return &uninstallOptions{}
+func NewUninstallOptions() *UninstallOptions {
+	return &UninstallOptions{}
 }
 
-func NewUninstallCommand(cli cli.CLI, options *uninstallOptions) *cobra.Command {
+func NewUninstallCommand(cli cli.CLI, options *UninstallOptions) *cobra.Command {
 	c := &uninstallCommand{
 		cli: cli,
 	}
@@ -77,7 +77,7 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 	return cmd
 }
 
-func (c *uninstallCommand) run(cli cli.CLI, options *uninstallOptions) error {
+func (c *uninstallCommand) run(cli cli.CLI, options *UninstallOptions) error {
 	objects, err := getBackyardsDemoObjects(options.namespace)
 	if err != nil {
 		return err

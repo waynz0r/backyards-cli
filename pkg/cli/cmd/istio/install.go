@@ -57,18 +57,18 @@ type installCommand struct {
 	cli cli.CLI
 }
 
-type installOptions struct {
+type InstallOptions struct {
 	DumpResources bool
 
 	istioCRFilename string
 	releaseName     string
 }
 
-func NewInstallOptions() *installOptions {
-	return &installOptions{}
+func NewInstallOptions() *InstallOptions {
+	return &InstallOptions{}
 }
 
-func NewInstallCommand(cli cli.CLI, options *installOptions) *cobra.Command {
+func NewInstallCommand(cli cli.CLI, options *InstallOptions) *cobra.Command {
 	c := &installCommand{
 		cli: cli,
 	}
@@ -105,7 +105,7 @@ The installer automatically detects whether the CRDs are installed or not, and b
 	return cmd
 }
 
-func (c *installCommand) run(cli cli.CLI, options *installOptions) error {
+func (c *installCommand) run(cli cli.CLI, options *InstallOptions) error {
 	objects, err := getIstioOperatorObjects(options.releaseName)
 	if err != nil {
 		return err
