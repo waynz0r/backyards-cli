@@ -103,6 +103,10 @@ func newSetCommand(cli cli.CLI) *cobra.Command {
 				return errors.New("service must be specified")
 			}
 
+			options.ConnectTimeout = options.connectTimeout.String()
+			options.BaseEjectionTime = options.baseEjectionTime.String()
+			options.Interval = options.interval.String()
+
 			options.serviceName, err = common.ParseServiceID(options.serviceID)
 			if err != nil {
 				return err
@@ -181,7 +185,7 @@ func (c *setCommand) run(cli cli.CLI, options *setOptions) error {
 		ConnectionPool: &v1alpha3.ConnectionPoolSettings{
 			TCP: &v1alpha3.TCPSettings{
 				MaxConnections: options.MaxConnections,
-				ConnectTimeout: options.connectTimeout.String(),
+				ConnectTimeout: options.ConnectTimeout,
 			},
 			HTTP: &v1alpha3.HTTPSettings{
 				HTTP1MaxPendingRequests:  options.HTTP1MaxPendingRequests,
@@ -192,8 +196,8 @@ func (c *setCommand) run(cli cli.CLI, options *setOptions) error {
 		},
 		OutlierDetection: &v1alpha3.OutlierDetection{
 			ConsecutiveErrors:  options.ConsecutiveErrors,
-			Interval:           options.interval.String(),
-			BaseEjectionTime:   options.baseEjectionTime.String(),
+			Interval:           options.Interval,
+			BaseEjectionTime:   options.BaseEjectionTime,
 			MaxEjectionPercent: options.MaxEjectionPercent,
 		},
 	}
