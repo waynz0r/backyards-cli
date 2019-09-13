@@ -115,8 +115,8 @@ func init() {
 	_ = viper.BindPFlag("output.format", flags.Lookup("output"))
 
 	_ = viper.BindPFlag("formatting.force-color", flags.Lookup("color"))
-	flags.Bool("no-interactive", false, "never ask questions interactively")
-	_ = viper.BindPFlag("formatting.no-interactive", flags.Lookup("no-interactive"))
+	flags.Bool("non-interactive", false, "never ask questions interactively")
+	_ = viper.BindPFlag("formatting.non-interactive", flags.Lookup("non-interactive"))
 	flags.Bool("interactive", false, "ask questions interactively even if stdin or stdout is non-tty")
 	_ = viper.BindPFlag("formatting.force-interactive", flags.Lookup("interactive"))
 

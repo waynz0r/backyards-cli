@@ -69,7 +69,7 @@ func (c *backyardsCLI) InteractiveTerminal() bool {
 
 func (c *backyardsCLI) Interactive() bool {
 	if isatty.IsTerminal(os.Stdout.Fd()) && isatty.IsTerminal(os.Stdin.Fd()) {
-		return !viper.GetBool("formatting.no-interactive")
+		return !viper.GetBool("formatting.non-interactive")
 	}
 
 	return viper.GetBool("formatting.force-interactive")
