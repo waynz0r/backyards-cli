@@ -15,6 +15,8 @@ package cmd
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -32,10 +34,6 @@ import (
 
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/graphtemplates"
 
-	"time"
-
-	"strings"
-
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 )
 
@@ -48,15 +46,15 @@ var (
 	relativeDur     time.Duration
 )
 
-func NewGraphCmd(cli cli.CLI) *cobra.Command {
+func NewGraphCmd(cli cli.CLI, command, fileName string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "graph",
+		Use:   command,
 		Short: "Show graph",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 
-			f, err := graphtemplates.GraphTemplates.Open("base.json")
+			f, err := graphtemplates.GraphTemplates.Open(fileName)
 			if err != nil {
 				return err
 			}

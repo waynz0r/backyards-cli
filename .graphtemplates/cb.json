@@ -1,0 +1,64 @@
+{
+  "version": "v1",
+  "datasources": {
+    "ds": {
+      "prometheus": {
+        "address": "http://127.0.0.1:9090/prometheus"
+      }
+    }
+  },
+  "dashboard": {
+    "variables": {
+      "titleSuffix": {
+        "constant": { "value": " " }
+      },
+      "filter": {
+        "constant": { "value": "reporter=\"source\",destination_service_name=\"frontpage\"" }
+      },
+      "interval": {
+        "interval": { "steps": 50 }
+      }
+    },
+    "widgets": [
+      {
+        "title": "Circuit Breaker trips rate",
+        "gridpos": {
+          "w": 33
+        },
+        "singlestat": {
+          "query": {
+            "expr": "(sum(irate(istio_requests_total{<<.filter>>,response_code=~\"5.*\",response_flags=~\"(.*?)UO(.*?)\"}[<<.interval>>])) / sum(irate(istio_requests_total{<<.filter>>}[<<.interval>>])) ) * 100 OR vector(0)",
+            "datasourceID": "ds"
+          },
+          "unit": "percent",
+          "valueText": "<<.value>>",
+          "decimals": 2,
+          "thresholds": [{ "color": "#76a1d6" }]
+        }
+      },
+      {
+        "title": "Circuit Breaker trips by source",
+        "gridpos": { "w": 66 },
+        "graph": {
+          "visualization": {
+            "seriesOverride": [
+              { "regex": "^2", "color": "#4caf45" },
+              { "regex": "^4", "color": "#fcf75e" },
+              { "regex": "^5", "color": "#e51a4c" }
+            ],
+            "yAxis": {
+              "unit": "reqps"
+            }
+          },
+          "queries": [
+            {
+              "datasourceID": "ds",
+              "expr": "round(sum(irate(istio_requests_total{<<.filter>>,response_code=~\"5.*\",response_flags=~\"(.*?)UO(.*?)\"}[<<.interval>>])) by (response_code, source_app), 0.001)",
+              "legend": "<< .source_app >>:<< .response_code >> trips"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

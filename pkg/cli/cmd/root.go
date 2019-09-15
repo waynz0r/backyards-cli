@@ -131,5 +131,6 @@ func init() {
 	RootCmd.AddCommand(demoapp.NewRootCmd(cli))
 	RootCmd.AddCommand(routing.NewRootCmd(cli))
 	RootCmd.AddCommand(certmanager.NewRootCmd(cli))
-	RootCmd.AddCommand(NewGraphCmd(cli))
+	RootCmd.AddCommand(NewGraphCmd(cli, "graph", "base.json"))
+	RootCmd.AddCommand(NewGraphCmd(cli, "cb", "cb.json"))
 }
