@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/waynz0r/grafterm/pkg/controller"
 	"github.com/waynz0r/grafterm/pkg/model"
@@ -33,26 +34,50 @@ import (
 	"github.com/waynz0r/grafterm/pkg/view/render/termdash"
 
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/graphtemplates"
-
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 )
 
 var (
 	titleSuffix     string
 	outbound        bool
-	namespace       string
-	service         string
 	refreshInterval time.Duration
 	relativeDur     time.Duration
 )
 
+type graphOptions struct {
+	serviceID string
+
+	serviceName types.NamespacedName
+}
+
+func newGraphOptions() *graphOptions {
+	return &graphOptions{}
+}
+
 func NewGraphCmd(cli cli.CLI, fileName string) *cobra.Command {
+	options := newGraphOptions()
+
 	cmd := &cobra.Command{
-		Use:   "graph",
+		Use:   "graph [[--service=]namespace/servicename]",
 		Short: "Show graph",
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
+
+			var err error
+
+			if len(args) > 0 {
+				options.serviceID = args[0]
+			}
+
+			if options.serviceID != "" {
+				options.serviceName, err = common.ParseServiceID(options.serviceID)
+				if err != nil {
+					return err
+				}
+			}
 
 			f, err := graphtemplates.GraphTemplates.Open(fileName)
 			if err != nil {
@@ -117,7 +142,7 @@ func NewGraphCmd(cli cli.CLI, fileName string) *cobra.Command {
 				return err
 			}
 
-			app, err := createApp(ctx, appcfg, ds, ctrl, renderer)
+			app, err := createApp(ctx, appcfg, ds, ctrl, renderer, options)
 			if err != nil {
 				return err
 			}
@@ -133,15 +158,13 @@ func NewGraphCmd(cli cli.CLI, fileName string) *cobra.Command {
 
 	cmd.Flags().StringVar(&titleSuffix, "title-suffix", "", "Title suffix")
 	cmd.Flags().BoolVar(&outbound, "outbound", false, "Whether to show outbound or inbound metrics")
-	cmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace")
-	cmd.Flags().StringVarP(&service, "service", "s", "", "Service")
 	cmd.Flags().DurationVarP(&refreshInterval, "refresh-interval", "r", 10*time.Second, "the interval to refresh the dashboard")
 	cmd.Flags().DurationVarP(&relativeDur, "relative-duration", "d", 15*time.Minute, "the relative duration from now to load the graph")
 
 	return cmd
 }
 
-func getFilter() string {
+func getFilter(options *graphOptions) string {
 	filters := make([]string, 0)
 
 	if outbound {
@@ -150,18 +173,18 @@ func getFilter() string {
 		filters = append(filters, "reporter=\"destination\"")
 	}
 
-	if namespace != "" {
-		filters = append(filters, "destination_service_namespace=~\""+namespace+"\"")
+	if options.serviceName.Namespace != "" {
+		filters = append(filters, "destination_service_namespace=~\""+options.serviceName.Namespace+"\"")
 	}
 
-	if service != "" {
-		filters = append(filters, "destination_service_name=~\""+service+"\"")
+	if options.serviceName.Name != "" {
+		filters = append(filters, "destination_service_name=~\""+options.serviceName.Name+"\"")
 	}
 
 	return strings.Join(filters, ",")
 }
 
-func getTitleSuffix() string {
+func getTitleSuffix(options *graphOptions) string {
 	if titleSuffix != "" {
 		return titleSuffix
 	}
@@ -173,12 +196,12 @@ func getTitleSuffix() string {
 		s = append(s, "inbound")
 	}
 
-	if namespace != "" {
-		s = append(s, namespace)
+	if options.serviceName.Namespace != "" {
+		s = append(s, options.serviceName.Namespace)
 	}
 
-	if service != "" {
-		s = append(s, service)
+	if options.serviceName.Name != "" {
+		s = append(s, options.serviceName.Name)
 	}
 
 	return strings.Join(s, " / ")
@@ -197,10 +220,10 @@ func createGatherer(dashboardDss, userDss []model.Datasource) (metric.Gatherer, 
 	return gatherer, nil
 }
 
-func createApp(ctx context.Context, appCfg view.AppConfig, dashboard model.Dashboard, ctrl controller.Controller, renderer render.Renderer) (*view.App, error) {
+func createApp(ctx context.Context, appCfg view.AppConfig, dashboard model.Dashboard, ctrl controller.Controller, renderer render.Renderer, options *graphOptions) (*view.App, error) {
 
-	filter := getFilter()
-	titleSuffix = " " + getTitleSuffix()
+	filter := getFilter(options)
+	titleSuffix = " " + getTitleSuffix(options)
 
 	dashCfg := page.DashboardCfg{
 		AppRelativeTimeRange: relativeDur,
