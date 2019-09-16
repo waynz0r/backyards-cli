@@ -56,7 +56,6 @@ pre-build: ## Pre build bundles of static assets
 
 .PHONY: build
 build: pre-build ## Build a binary
-build: ## Build a binary
 ifeq (${VERBOSE}, 1)
 	go env
 endif
