@@ -21,7 +21,7 @@
     },
     "widgets": [
       {
-        "title": "Circuit Breaker trips rate",
+        "title": "Circuit Breaker trips rate<<.titleSuffix>>",
         "gridpos": {
           "w": 33
         },
@@ -33,7 +33,19 @@
           "unit": "percent",
           "valueText": "<<.value>>",
           "decimals": 2,
-          "thresholds": [{ "color": "#76a1d6" }]
+          "thresholds": [
+            {
+              "color": "#82CEF2"
+            },
+            {
+              "color": "#FF780A",
+              "startValue": 0.01
+            },
+            {
+              "color": "#d44a3a",
+              "startValue": 2
+            }
+          ]
         }
       },
       {
