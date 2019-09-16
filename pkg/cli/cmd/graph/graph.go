@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package cmd
+package graph
 
 import (
 	"context"
@@ -46,9 +46,9 @@ var (
 	relativeDur     time.Duration
 )
 
-func NewGraphCmd(cli cli.CLI, command, fileName string) *cobra.Command {
+func NewGraphCmd(cli cli.CLI, fileName string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   command,
+		Use:   "graph",
 		Short: "Show graph",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceErrors = true

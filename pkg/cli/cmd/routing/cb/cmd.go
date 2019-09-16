@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/graph"
 )
 
 func NewRootCmd(cli cli.CLI) *cobra.Command {
@@ -31,6 +32,7 @@ func NewRootCmd(cli cli.CLI) *cobra.Command {
 		newGetCommand(cli),
 		newSetCommand(cli),
 		newDeleteCommand(cli),
+		graph.NewGraphCmd(cli, "cb.json"),
 	)
 
 	return cmd

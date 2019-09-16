@@ -29,6 +29,7 @@ import (
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
+	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/graph"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing"
 )
@@ -131,6 +132,5 @@ func init() {
 	RootCmd.AddCommand(demoapp.NewRootCmd(cli))
 	RootCmd.AddCommand(routing.NewRootCmd(cli))
 	RootCmd.AddCommand(certmanager.NewRootCmd(cli))
-	RootCmd.AddCommand(NewGraphCmd(cli, "graph", "base.json"))
-	RootCmd.AddCommand(NewGraphCmd(cli, "cb", "cb.json"))
+	RootCmd.AddCommand(graph.NewGraphCmd(cli, "base.json"))
 }
