@@ -5,6 +5,7 @@ linters:
         - gochecknoglobals
         - lll
         - gochecknoinits
+        - funlen
 
 linters-settings:
     funlen:
