@@ -20,6 +20,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/mattn/go-isatty"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/client-go/rest"
@@ -46,21 +47,27 @@ type CLI interface {
 	Color() bool
 	Interactive() bool
 	InteractiveTerminal() bool
+	GetRootCommand() *cobra.Command
 	GetK8sClient() (k8sclient.Client, error)
-
 	GetK8sConfig() (*rest.Config, error)
 	GetPortforwardForPod(podLabels map[string]string, namespace string, localPort, remotePort int) (*portforward.Portforward, error)
 	GetPortforwardForIGW(localPort int) (*portforward.Portforward, error)
 }
 
 type backyardsCLI struct {
-	out io.Writer
+	out     io.Writer
+	rootCmd *cobra.Command
 }
 
-func NewCli(out io.Writer) CLI {
+func NewCli(out io.Writer, rootCmd *cobra.Command) CLI {
 	return &backyardsCLI{
-		out: out,
+		out:     out,
+		rootCmd: rootCmd,
 	}
+}
+
+func (c *backyardsCLI) GetRootCommand() *cobra.Command {
+	return c.rootCmd
 }
 
 func (c *backyardsCLI) InteractiveTerminal() bool {

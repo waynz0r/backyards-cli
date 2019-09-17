@@ -47,7 +47,7 @@ func NewDashboardOptions() *DashboardOptions {
 	}
 }
 
-func newDashboardCommand(cli cli.CLI, options *DashboardOptions) *cobra.Command {
+func NewDashboardCommand(cli cli.CLI, options *DashboardOptions) *cobra.Command {
 	c := dashboardCommand{}
 
 	cmd := &cobra.Command{

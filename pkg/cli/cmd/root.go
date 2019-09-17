@@ -25,13 +25,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/canary"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/certmanager"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/demoapp"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/graph"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/istio"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/routing"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/graph"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing"
 )
 
 const (
@@ -121,12 +122,12 @@ func init() {
 	flags.Bool("interactive", false, "ask questions interactively even if stdin or stdout is non-tty")
 	_ = viper.BindPFlag("formatting.force-interactive", flags.Lookup("interactive"))
 
-	cli := cli.NewCli(os.Stdout)
+	cli := cli.NewCli(os.Stdout, RootCmd)
 
-	RootCmd.AddCommand(newVersionCommand(cli))
-	RootCmd.AddCommand(newInstallCommand(cli))
-	RootCmd.AddCommand(newUninstallCommand(cli))
-	RootCmd.AddCommand(newDashboardCommand(cli, NewDashboardOptions()))
+	RootCmd.AddCommand(cmd.NewVersionCommand(cli))
+	RootCmd.AddCommand(cmd.NewInstallCommand(cli))
+	RootCmd.AddCommand(cmd.NewUninstallCommand(cli))
+	RootCmd.AddCommand(cmd.NewDashboardCommand(cli, cmd.NewDashboardOptions()))
 	RootCmd.AddCommand(istio.NewRootCmd(cli))
 	RootCmd.AddCommand(canary.NewRootCmd(cli))
 	RootCmd.AddCommand(demoapp.NewRootCmd(cli))

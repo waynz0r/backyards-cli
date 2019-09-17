@@ -25,9 +25,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis/istio/v1alpha3"
 
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/routing/common"
 	clierrors "github.com/banzaicloud/backyards-cli/internal/errors"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 	"github.com/banzaicloud/backyards-cli/pkg/graphql"
 	"github.com/banzaicloud/backyards-cli/pkg/questionnaire"
 )

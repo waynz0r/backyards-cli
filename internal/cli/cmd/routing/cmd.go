@@ -12,27 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cb
+package routing
 
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/routing/cb"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/routing/ts"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/graph"
 )
 
 func NewRootCmd(cli cli.CLI) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "circuit-breaker",
-		Aliases: []string{"cb"},
-		Short:   "Manage circuit-breaker configurations",
+		Use:     "routing",
+		Aliases: []string{"r"},
+		Short:   "Manage service routing configurations",
 	}
 
 	cmd.AddCommand(
-		newGetCommand(cli),
-		newSetCommand(cli),
-		newDeleteCommand(cli),
-		graph.NewGraphCmd(cli, "cb.json"),
+		ts.NewRootCmd(cli),
+		cb.NewRootCmd(cli),
 	)
 
 	return cmd

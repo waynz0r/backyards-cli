@@ -34,8 +34,8 @@ import (
 	"github.com/waynz0r/grafterm/pkg/view/render/termdash"
 
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/graphtemplates"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/routing/common"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 )
 
 var (

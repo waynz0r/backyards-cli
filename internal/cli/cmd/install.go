@@ -22,6 +22,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"go.uber.org/multierr"
 	"istio.io/operator/pkg/object"
 	v1 "k8s.io/api/core/v1"
@@ -30,11 +31,11 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/backyards"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/canary"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/certmanager"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/demoapp"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/canary"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/certmanager"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/demoapp"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/istio"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
 )
@@ -72,7 +73,7 @@ type InstallOptions struct {
 	runDemo            bool
 }
 
-func newInstallCommand(cli cli.CLI) *cobra.Command {
+func NewInstallCommand(cli cli.CLI) *cobra.Command {
 	c := &installCommand{
 		cli: cli,
 	}
@@ -217,7 +218,7 @@ func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc f
 		Name:      "backyards",
 		IsInstall: true,
 		IsUpgrade: false,
-		Namespace: backyardsNamespace,
+		Namespace: viper.GetString("backyards.namespace"),
 	}, "backyards")
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not render helm manifest objects")
@@ -337,7 +338,7 @@ func (c *installCommand) runDemo(cli cli.CLI, options *InstallOptions) error {
 	dbOptions := NewDashboardOptions()
 	dbOptions.URI = "?namespaces=" + demoapp.GetNamespace()
 	dbOptions.Port = 0
-	dbCmd := newDashboardCommand(cli, dbOptions)
+	dbCmd := NewDashboardCommand(cli, dbOptions)
 	err = dbCmd.RunE(dbCmd, nil)
 	if err != nil {
 		return errors.WrapIf(err, "error during opening dashboard")

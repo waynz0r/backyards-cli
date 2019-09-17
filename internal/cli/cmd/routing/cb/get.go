@@ -21,9 +21,9 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/routing/common"
 	clierrors "github.com/banzaicloud/backyards-cli/internal/errors"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
-	"github.com/banzaicloud/backyards-cli/pkg/cli/cmd/routing/common"
 )
 
 type getCommand struct{}

@@ -43,7 +43,7 @@ func newVersionOptions() *versionOptions {
 	}
 }
 
-func newVersionCommand(cli cli.CLI) *cobra.Command {
+func NewVersionCommand(cli cli.CLI) *cobra.Command {
 	c := &versionCommand{}
 	options := newVersionOptions()
 
@@ -64,7 +64,7 @@ func newVersionCommand(cli cli.CLI) *cobra.Command {
 }
 
 func (c *versionCommand) run(cli cli.CLI, options *versionOptions) {
-	clientVersion := GetRootCommand().Version
+	clientVersion := cli.GetRootCommand().Version
 	if options.shortVersion {
 		fmt.Println(clientVersion)
 	} else {
