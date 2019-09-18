@@ -35,6 +35,7 @@ import (
 	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/certmanager"
 	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/demoapp"
 	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/istio"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/util"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
@@ -46,9 +47,6 @@ const (
 )
 
 var (
-	sidecarPodLabels = map[string]string{
-		"app": "istio-sidecar-injector",
-	}
 	certManagerPodLabels = map[string]string{
 		"app": "cert-manager",
 	}
@@ -278,7 +276,7 @@ func (c *installCommand) istioRunning(istioNamespace string) (exists bool, healt
 		return
 	}
 	var pods v1.PodList
-	err = cl.List(context.Background(), &pods, client.InNamespace(istioNamespace), client.MatchingLabels(sidecarPodLabels))
+	err = cl.List(context.Background(), &pods, client.InNamespace(istioNamespace), client.MatchingLabels(util.SidecarPodLabels))
 	if err != nil {
 		err = errors.WrapIf(err, "could not list istio pods")
 		return

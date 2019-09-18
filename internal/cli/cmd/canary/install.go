@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/banzaicloud/backyards-cli/cmd/backyards/static/canary_operator"
+	"github.com/banzaicloud/backyards-cli/internal/cli/cmd/util"
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
@@ -41,12 +42,6 @@ An existing Istio installation is required. You can install it with:
 
 backyards istio install
 `
-)
-
-var (
-	sidecarPodLabels = map[string]string{
-		"app": "istio-sidecar-injector",
-	}
 )
 
 type installCommand struct {
@@ -188,7 +183,7 @@ func (c *installCommand) validate(istioNamespace string) error {
 		return errors.WrapIf(err, "could not get k8s client")
 	}
 	var pods v1.PodList
-	err = cl.List(context.Background(), &pods, client.InNamespace(istioNamespace), client.MatchingLabels(sidecarPodLabels))
+	err = cl.List(context.Background(), &pods, client.InNamespace(istioNamespace), client.MatchingLabels(util.SidecarPodLabels))
 	if err != nil {
 		return errors.WrapIf(err, "could not list pods")
 	}
