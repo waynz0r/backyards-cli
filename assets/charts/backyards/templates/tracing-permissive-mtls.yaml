@@ -1,0 +1,84 @@
+{{- if .Values.tracing.enabled }}
+# Make it possible to reach Backyards without mTLS (eg. using kube-proxy)
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: {{ include "tracing.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "tracing.name" . }}
+    app.kubernetes.io/name: {{ include "tracing.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  targets:
+    - name: {{ include "tracing.fullname" . }}
+  peers:
+    - mtls:
+        mode: PERMISSIVE
+---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: {{ include "tracing.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "tracing.name" . }}
+    app.kubernetes.io/name: {{ include "tracing.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  host: {{ include "tracing.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+---
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: "Policy"
+metadata:
+  name: {{ .Values.tracing.service.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "tracing.name" . }}
+    app.kubernetes.io/name: {{ include "tracing.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  targets:
+    - name: {{ .Values.tracing.service.name }}
+  peers:
+    - mtls:
+        mode: PERMISSIVE
+---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: {{ .Values.tracing.service.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "tracing.name" . }}
+    app.kubernetes.io/name: {{ include "tracing.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  host: {{ .Values.tracing.service.name }}.{{ .Release.Namespace }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+{{- end }}

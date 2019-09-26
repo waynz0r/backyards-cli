@@ -147,6 +147,17 @@ spec:
             - name: AUDITSINK_HTTP_PANIC_ON_FAILURE
               value: "{{ .Values.auditsink.http.panicOnFailure }}"
           {{- end }}
+            - name: AUTH_METHOD
+              value: "{{ .Values.auth.method }}"
+          {{- if .Values.auth.jwtSigningKeySecret }}
+            - name: AUTH_JWT_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  {{ toYaml .Values.auth.jwtSigningKeySecret | nindent 16 }}
+          {{- else }}
+            - name: AUTH_JWT_SIGNING_KEY_FILE
+              value: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+          {{- end }}
           volumeMounts:
           {{- if .Values.auditsink.enabled }}
             - name: auditsink-cert

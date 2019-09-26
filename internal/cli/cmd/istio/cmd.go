@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	istioNamespace string
+	IstioNamespace string
 )
 
 func NewRootCmd(cli cli.CLI) *cobra.Command {
@@ -38,7 +38,7 @@ func NewRootCmd(cli cli.CLI) *cobra.Command {
 		NewUninstallCommand(cli, NewUninstallOptions()),
 	)
 
-	cmd.PersistentFlags().StringVarP(&istioNamespace, "namespace", "n", DefaultNamespace, "Namespace in which Istio is installed [$ISTIO_NAMESPACE]")
+	cmd.PersistentFlags().StringVarP(&IstioNamespace, "namespace", "n", DefaultNamespace, "Namespace in which Istio is installed [$ISTIO_NAMESPACE]")
 
 	return cmd
 }

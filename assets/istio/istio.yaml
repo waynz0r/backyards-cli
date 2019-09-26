@@ -18,3 +18,8 @@ spec:
     image: banzaicloud/istio-pilot:1.3.0-bzc
   mixer:
     image: banzaicloud/istio-mixer:1.3.0-bzc
+  tracing:
+    enabled: true
+    tracer: zipkin
+    zipkin:
+      address: backyards-zipkin.backyards-system:9411

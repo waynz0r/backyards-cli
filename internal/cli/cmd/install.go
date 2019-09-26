@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -26,6 +27,7 @@ import (
 	"go.uber.org/multierr"
 	"istio.io/operator/pkg/object"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
@@ -39,6 +41,7 @@ import (
 	"github.com/banzaicloud/backyards-cli/pkg/cli"
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 	"github.com/banzaicloud/backyards-cli/pkg/k8s"
+	"github.com/banzaicloud/istio-operator/pkg/apis/istio/v1beta1"
 )
 
 const (
@@ -69,6 +72,13 @@ type InstallOptions struct {
 	disableAuditSink   bool
 	installEverything  bool
 	runDemo            bool
+}
+
+// patchStringValue specifies a patch operation for a string value
+type patchStringValue struct {
+	Op    string `json:"op"`
+	Path  string `json:"path"`
+	Value string `json:"value"`
 }
 
 func NewInstallCommand(cli cli.CLI) *cobra.Command {
@@ -104,6 +114,11 @@ The command can install every component at once with the '--install-everything' 
 			}
 
 			err = c.run(cli, options)
+			if err != nil {
+				return err
+			}
+
+			err = c.runDemoInstall(cli, options)
 			if err != nil {
 				return err
 			}
@@ -147,14 +162,24 @@ func (c *installCommand) run(cli cli.CLI, options *InstallOptions) error {
 		return nil
 	}
 
-	objects, err := getBackyardsObjects(options.releaseName, options.istioNamespace, func(values *Values) {
+	values, err := getValues(options.releaseName, options.istioNamespace, func(values *Values) {
 		values.CertManager.Enabled = !options.disableCertManager
 		values.AuditSink.Enabled = !options.disableAuditSink
 	})
-
 	if err != nil {
 		return err
 	}
+
+	err = c.setTracingAddress(values)
+	if err != nil {
+		return err
+	}
+
+	objects, err := getBackyardsObjects(values)
+	if err != nil {
+		return err
+	}
+
 	objects.Sort(helm.InstallObjectOrder())
 
 	if !options.dumpResources {
@@ -188,17 +213,17 @@ func (c *installCommand) run(cli cli.CLI, options *InstallOptions) error {
 	return nil
 }
 
-func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc func(values *Values)) (object.K8sObjects, error) {
+func getValues(releaseName, istioNamespace string, valueOverrideFunc func(values *Values)) (Values, error) {
 	var values Values
 
 	valuesYAML, err := helm.GetDefaultValues(backyards.Chart)
 	if err != nil {
-		return nil, errors.WrapIf(err, "could not get helm default values")
+		return Values{}, errors.WrapIf(err, "could not get helm default values")
 	}
 
 	err = yaml.Unmarshal(valuesYAML, &values)
 	if err != nil {
-		return nil, errors.WrapIf(err, "could not unmarshal yaml values")
+		return Values{}, errors.WrapIf(err, "could not unmarshal yaml values")
 	}
 
 	values.SetDefaults(releaseName, istioNamespace)
@@ -207,6 +232,10 @@ func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc f
 		valueOverrideFunc(&values)
 	}
 
+	return values, nil
+}
+
+func getBackyardsObjects(values Values) (object.K8sObjects, error) {
 	rawValues, err := yaml.Marshal(values)
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not marshal yaml values")
@@ -223,6 +252,31 @@ func getBackyardsObjects(releaseName, istioNamespace string, valueOverrideFunc f
 	}
 
 	return objects, nil
+}
+
+func (c *installCommand) setTracingAddress(values Values) error {
+	cl, err := c.cli.GetK8sClient()
+	if err != nil {
+		err = errors.WrapIf(err, "could not get k8s client")
+		return err
+	}
+
+	payload := []patchStringValue{{
+		Op:    "replace",
+		Path:  "/spec/tracing/zipkin/address",
+		Value: fmt.Sprintf("%s.%s:%d", values.Tracing.Service.Name, viper.GetString("backyards.namespace"), values.Tracing.Service.ExternalPort),
+	}}
+	payloadBytes, _ := json.Marshal(payload)
+
+	istioCR := v1beta1.Istio{}
+	istioCR.Name = istio.IstioCRName
+	istioCR.Namespace = istio.IstioNamespace
+	err = cl.Patch(context.Background(), &istioCR, client.ConstantPatch(types.JSONPatchType, payloadBytes))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *installCommand) validate(options *InstallOptions) error {
@@ -384,6 +438,13 @@ func (c *installCommand) runSubcommands(cli cli.CLI, options *InstallOptions) er
 			return errors.WrapIf(err, "error during Canary feature install")
 		}
 	}
+
+	return nil
+}
+
+func (c *installCommand) runDemoInstall(cli cli.CLI, options *InstallOptions) error {
+	var err error
+	var scmd *cobra.Command
 
 	if options.installDemoapp || options.installEverything {
 		scmdOptions := demoapp.NewInstallOptions()

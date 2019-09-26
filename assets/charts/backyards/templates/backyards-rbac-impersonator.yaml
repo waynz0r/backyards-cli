@@ -1,0 +1,74 @@
+{{ if .Values.impersonation.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "backyards.fullname" . }}-impersonator
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+rules:
+{{- if .Values.impersonation.config }}
+  {{- if .Values.impersonation.config.users }}
+  - apiGroups: [""]
+    resources: ["users"]
+    verbs: ["impersonate"]
+    resourceNames: {{ .Values.impersonation.config.users }}
+  {{- end }}
+
+  {{- if .Values.impersonation.config.groups }}
+  - apiGroups: [""]
+    resources: ["groups"]
+    verbs: ["impersonate"]
+    resourceNames: {{ .Values.impersonation.config.groups }}
+  {{- end }}
+
+  {{- if .Values.impersonation.config.serviceaccounts }}
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["impersonate"]
+    resourceNames: {{ .Values.impersonation.config.serviceaccounts }}
+  {{- end }}
+
+  {{- if .Values.impersonation.config.scopes }}
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["userextras/scopes"]
+    verbs: ["impersonate"]
+    resourceNames: {{ .Values.impersonation.config.scopes }}
+  {{- end }}
+{{- else }}
+  - apiGroups: [""]
+    resources: ["users", "groups", "serviceaccounts"]
+    verbs: ["impersonate"]
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["userextras/scopes"]
+    verbs: ["impersonate"]
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "backyards.fullname" . }}-impersonator
+  labels:
+    app: {{ include "backyards.name" . }}
+    app.kubernetes.io/name: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "backyards.fullname" . }}-impersonator
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "backyards.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

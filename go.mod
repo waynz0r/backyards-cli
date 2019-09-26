@@ -20,6 +20,7 @@ require (
 	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31
 	github.com/waynz0r/grafterm v0.2.1-0.20190814214739-b7722452f1e4
 	go.uber.org/multierr v1.1.0
+	gomodules.xyz/jsonpatch/v2 v2.0.1 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 	istio.io/operator v0.0.0-20190805193245-ce3cfb6e2672
 	k8s.io/api v0.0.0-20190704095032-f4ca3d3bdf1d

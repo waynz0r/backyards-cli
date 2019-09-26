@@ -89,10 +89,16 @@ It can only dump the removable resources with the '--dump-resources' option.`,
 }
 
 func (c *uninstallCommand) run(cli cli.CLI, options *UninstallOptions) error {
-	objects, err := getBackyardsObjects(options.releaseName, options.istioNamespace, nil)
+	values, err := getValues(options.releaseName, options.istioNamespace, nil)
 	if err != nil {
 		return err
 	}
+
+	objects, err := getBackyardsObjects(values)
+	if err != nil {
+		return err
+	}
+
 	objects.Sort(helm.UninstallObjectOrder())
 
 	if !options.dumpResources {

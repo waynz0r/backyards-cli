@@ -56,6 +56,14 @@ spec:
               number: 3000
     - match:
       - uri:
+          prefix: {{ .Values.tracing.externalUrl }}
+      route:
+        - destination:
+            host: {{ include "tracing.fullname" . }}
+            port:
+              number: 80
+    - match:
+      - uri:
           prefix: /
       route:
         - destination:

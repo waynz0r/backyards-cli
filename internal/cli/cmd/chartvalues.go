@@ -21,6 +21,12 @@ import (
 	"github.com/banzaicloud/backyards-cli/pkg/helm"
 )
 
+type AuthMethod string
+
+const (
+	anonymous AuthMethod = "anonymous"
+)
+
 type Values struct {
 	NameOverride         string                      `json:"nameOverride,omitempty"`
 	FullnameOverride     string                      `json:"fullnameOverride,omitempty"`
@@ -108,6 +114,29 @@ type Values struct {
 		ExternalURL string `json:"externalUrl"`
 	} `json:"grafana"`
 
+	Tracing struct {
+		Enabled     bool   `json:"enabled"`
+		ExternalURL string `json:"externalUrl"`
+		Provider    string `json:"provider"`
+		Jaeger      struct {
+			Image     helm.Image                  `json:"image"`
+			Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+			Memory    struct {
+				MaxTraces string `json:"max_traces"`
+			} `json:"memory"`
+			SpanStorageType  string `json:"spanStorageType"`
+			Persist          bool   `json:"persist"`
+			StorageClassName string `json:"storageClassName"`
+			AccessMode       string `json:"accessMode"`
+		} `json:"jaeger"`
+		Service struct {
+			Annotations  map[string]string `json:"annotations"`
+			Name         string            `json:"name"`
+			Type         string            `json:"type"`
+			ExternalPort int               `json:"externalPort"`
+		} `json:"service"`
+	} `json:"tracing"`
+
 	IngressGateway struct {
 		Service struct {
 			Type string `json:"type"`
@@ -131,6 +160,20 @@ type Values struct {
 	CertManager struct {
 		Enabled bool `json:"enabled"`
 	} `json:"certmanager"`
+
+	Auth struct {
+		Method AuthMethod `json:"method"`
+	} `json:"auth"`
+
+	Impersonation struct {
+		Enabled bool `json:"enabled"`
+		Config  struct {
+			Users           []string `json:"users"`
+			Groups          []string `json:"groups"`
+			ServiceAccounts []string `json:"serviceaccounts"`
+			Scopes          []string `json:"scopes"`
+		} `json:"config"`
+	} `json:"impersonation"`
 }
 
 func (values *Values) SetDefaults(releaseName, istioNamespace string) {
@@ -190,4 +233,22 @@ func (values *Values) SetDefaults(releaseName, istioNamespace string) {
 	}
 	values.Grafana.ExternalURL = "/grafana"
 	values.Grafana.Security.Enabled = false
+
+	values.Tracing.Enabled = true
+	values.Tracing.ExternalURL = "/jaeger"
+	values.Tracing.Provider = "jaeger"
+	values.Tracing.Jaeger.Resources = corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("128Mi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("800m"),
+			corev1.ResourceMemory: resource.MustParse("1Gi"),
+		},
+	}
+	values.Tracing.Service.Name = "backyards-zipkin"
+
+	values.Auth.Method = anonymous
+	values.Impersonation.Enabled = false
 }

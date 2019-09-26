@@ -1,0 +1,56 @@
+{{ if .Values.tracing.enabled}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.tracing.service.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.tracing.provider }}
+    app.kubernetes.io/name: {{ .Values.tracing.provider }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  type: {{ .Values.tracing.service.type }}
+  ports:
+    - port: {{ .Values.tracing.service.externalPort }}
+      targetPort: 9411
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.tracing.provider }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tracing.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- range $key, $val := .Values.tracing.service.annotations }}
+    {{ $key }}: {{ $val | quote }}
+    {{- end }}
+  labels:
+    app: {{ .Values.tracing.provider }}
+    app.kubernetes.io/name: {{ .Values.tracing.provider }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: tracing
+    app.kubernetes.io/part-of: {{ include "backyards.name" . }}
+    helm.sh/chart: {{ include "backyards.chart" . }}
+spec:
+  ports:
+    - name: http-query
+      port: 80
+      protocol: TCP
+{{ if eq .Values.tracing.provider "jaeger" }}
+      targetPort: 16686
+{{ else }}
+      targetPort: 9411
+{{ end}}
+  selector:
+    app: {{ .Values.tracing.provider }}
+{{ end }}

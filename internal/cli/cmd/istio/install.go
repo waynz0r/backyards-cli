@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	istioCRName         = "mesh"
+	IstioCRName         = "mesh"
 	istioCRYamlFilename = "istio.yaml"
 )
 
@@ -211,8 +211,8 @@ func (c *installCommand) getIstioDeploymentsToWaitFor() []k8s.NamespacedNameWith
 
 	client, _ := c.cli.GetK8sClient()
 	err := client.Get(context.Background(), types.NamespacedName{
-		Name:      istioCRName,
-		Namespace: istioNamespace,
+		Name:      IstioCRName,
+		Namespace: IstioNamespace,
 	}, &istioCR)
 	if err != nil {
 		panic(err)
@@ -250,7 +250,7 @@ func (c *installCommand) getIstioDeploymentsToWaitFor() []k8s.NamespacedNameWith
 		deployments[i] = k8s.NamespacedNameWithGVK{
 			NamespacedName: types.NamespacedName{
 				Name:      name,
-				Namespace: istioNamespace,
+				Namespace: IstioNamespace,
 			},
 			GroupVersionKind: appsv1.SchemeGroupVersion.WithKind("Deployment"),
 		}
@@ -283,7 +283,7 @@ func getIstioOperatorObjects(releaseName string) (object.K8sObjects, error) {
 		Name:      "istio-operator",
 		IsInstall: true,
 		IsUpgrade: false,
-		Namespace: istioNamespace,
+		Namespace: IstioNamespace,
 	}, "istio-operator")
 	if err != nil {
 		return nil, errors.WrapIf(err, "could not render helm manifest objects")
@@ -317,8 +317,8 @@ func getIstioCR(filename string) (*object.K8sObject, error) {
 	}
 
 	metadata := obj.UnstructuredObject().Object["metadata"].(map[string]interface{})
-	metadata["namespace"] = istioNamespace
-	metadata["name"] = istioCRName
+	metadata["namespace"] = IstioNamespace
+	metadata["name"] = IstioCRName
 
 	return obj, nil
 }

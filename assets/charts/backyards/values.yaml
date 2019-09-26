@@ -5,7 +5,8 @@ replicaCount: 1
 
 ingress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: istio
     # kubernetes.io/tls-acme: "true"
   paths:
@@ -25,7 +26,8 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 70
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -46,7 +48,7 @@ affinity: {}
 application:
   image:
     repository: banzaicloud/backyards
-    tag: 0.1.8
+    tag: 0.1.9
     pullPolicy: Always
 
   env: {}
@@ -62,7 +64,7 @@ web:
   enabled: false
   image:
     repository: banzaicloud/backyards
-    tag: web-0.1.8
+    tag: web-0.1.9
     pullPolicy: Always
 
   env: {}
@@ -89,7 +91,8 @@ prometheus:
     repository: prom/prometheus
     tag: v2.11.1
     pullPolicy: Always
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 200m
     #   memory: 50Mi
@@ -116,6 +119,28 @@ grafana:
   security:
     enabled: false
 
+tracing:
+  enabled: true
+  externalUrl: /jaeger
+  provider: jaeger
+  jaeger:
+    image:
+      repository: docker.io/jaegertracing/all-in-one
+      tag: 1.12
+      pullPolicy: Always
+    memory:
+      max_traces: 50000
+    # spanStorageType value can be "memory" and "badger" for all-in-one image
+    spanStorageType: badger
+    persist: false
+    storageClassName: ""
+    accessMode: ReadWriteMany
+  service:
+    annotations: {}
+    name: backyards-zipkin
+    type: ClusterIP
+    externalPort: 9411
+
 # requires certmanager to be present and functional for the actual namespace
 auditsink:
   enabled: false
@@ -137,5 +162,24 @@ ingressgateway:
     type: ClusterIP
 
 certmanager:
-  # required if auditsink is enabled
+  # Required if auditsink is enabled.
   enabled: false
+
+auth:
+  # One of anonymous or impersonation.
+  method: anonymous
+  # The jwt signing key will be generated from the service account token,
+  # but can be overridden to use the following secret.
+  #jwtSigningKeySecret:
+  #  name:
+  #  key:
+
+impersonation:
+  enabled: false
+  # Impersonation is configured by default to allow impersonating any user/group/sa in the system with any scope,
+  # but can be customized with the `config` field.
+  #  config:
+  #    users: ["jane.doe@example.com"]
+  #    groups: ["developers","admins"]
+  #    serviceaccounts: ["system:serviceaccount:default:default"]
+  #    scopes: ["view", "development"]
