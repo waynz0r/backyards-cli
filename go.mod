@@ -1,4 +1,4 @@
-module github.com/banzaicloud/backyards-cli
+module github.com/waynz0r/backyards-cli
 
 go 1.13
 
@@ -28,6 +28,7 @@ require (
 	k8s.io/apimachinery v0.0.0-20190704094733-8f6ac2502e51
 	k8s.io/client-go v11.0.1-0.20190516230509-ae8359b20417+incompatible
 	k8s.io/helm v2.14.3+incompatible
+	k8s.io/klog v0.4.0
 	knative.dev/pkg v0.0.0-20190903162800-3dd5d66573f6
 	sigs.k8s.io/controller-runtime v0.2.0-beta.4
 	sigs.k8s.io/yaml v1.1.0
