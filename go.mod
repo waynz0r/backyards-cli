@@ -21,14 +21,13 @@ require (
 	github.com/waynz0r/grafterm v0.2.1-0.20190814214739-b7722452f1e4
 	go.uber.org/multierr v1.1.0
 	gomodules.xyz/jsonpatch/v2 v2.0.1 // indirect
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.8
 	istio.io/operator v0.0.0-20190805193245-ce3cfb6e2672
 	k8s.io/api v0.0.0-20190704095032-f4ca3d3bdf1d
 	k8s.io/apiextensions-apiserver v0.0.0-20190801143813-8b5f3a974f92
 	k8s.io/apimachinery v0.0.0-20190704094733-8f6ac2502e51
 	k8s.io/client-go v11.0.1-0.20190516230509-ae8359b20417+incompatible
 	k8s.io/helm v2.14.3+incompatible
-	k8s.io/klog v0.4.0
 	knative.dev/pkg v0.0.0-20190903162800-3dd5d66573f6
 	sigs.k8s.io/controller-runtime v0.2.0-beta.4
 	sigs.k8s.io/yaml v1.1.0
